@@ -1,8 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-
-import { Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { CircleX } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -20,6 +18,8 @@ interface User {
 
 interface EditProps {
     user: User;
+    userRoles: string[];
+    roles: string[];
 }
 
 export default function Edit({ user, userRoles, roles }: EditProps) {
@@ -33,16 +33,14 @@ export default function Edit({ user, userRoles, roles }: EditProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // 1. Kung may laman ang password pero empty ang confirm password
         if (data.floating_password && !data.floating_repeat_password) {
             alert('⚠️ Please confirm your password.');
-            return; // ❌ Stop dito, wag mag-save
+            return;
         }
 
-        // 2. Kung hindi pareho ang password at confirm password
         if (data.floating_password !== data.floating_repeat_password) {
             alert('⚠️ Passwords do not match.');
-            return; // ❌ Stop ulit
+            return;
         }
         put(route('users.update', user.id));
     };
@@ -152,24 +150,26 @@ export default function Edit({ user, userRoles, roles }: EditProps) {
 
                         {/* Roles */}
                         <div className="mb-5">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Permissions</label>
-                            {roles.map((role) => (
-                                <div className="flex flex-col space-y-2">
-                                    <label key={roles} className="flex items-center space-x-2">
-                                        <input
-                                            checked={data.roles.includes(role)}
-                                            onChange={(e) => handleCheckboxChange(role, e.target.checked)}
-                                            type="checkbox"
-                                            id={role}
-                                            value={role}
-                                            className="form-checkbox h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300">{role}</span>
-                                    </label>
-                                </div>
-                            ))}
+                            <>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Permissions</label>
+                                {roles.map((role) => (
+                                    <div key={role} className="flex flex-col space-y-2">
+                                        <label className="flex items-center space-x-2">
+                                            <input
+                                                checked={data.roles.includes(role)}
+                                                onChange={(e) => handleCheckboxChange(role, e.target.checked)}
+                                                type="checkbox"
+                                                id={role}
+                                                value={role}
+                                                className="form-checkbox h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                                            />
+                                            <span className="text-gray-700 dark:text-gray-300">{role}</span>
+                                        </label>
+                                    </div>
+                                ))}
 
-                            {errors.roles && <div className="mt-1 text-sm text-red-600">{errors.roles}</div>}
+                                {errors.roles && <div className="mt-1 text-sm text-red-600">{errors.roles}</div>}
+                            </>
                         </div>
 
                         <button

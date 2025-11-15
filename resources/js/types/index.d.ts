@@ -18,8 +18,12 @@ export interface NavGroup {
 export interface NavItem {
     title: string;
     href: string;
-    icon?: LucideIcon | null;
+    icon?: LucideIcon | reacticons.IconType | null;
+    roles?: string[]; // Array of roles that can see this item
     isActive?: boolean;
+    children?: NavItem[];
+    actions: string[];
+    resource?: string;
 }
 
 export interface SharedData {

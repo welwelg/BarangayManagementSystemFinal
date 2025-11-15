@@ -11,7 +11,18 @@ createServer((page) =>
         page,
         render: ReactDOMServer.renderToString,
         title: (title) => title ? `${title} - ${appName}` : appName,
-        resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+        resolve: async (name) => {
+            const pages = {
+                ...import.meta.glob('./pages/**/*.tsx'),
+                ...import.meta.glob('./pages/**/*.jsx'),
+            } as Record<string, () => Promise<any>>;
+            const importer = pages[`./pages/${name}.tsx`] || pages[`./pages/${name}.jsx`];
+            if (!importer) {
+                throw new Error(`Page not found: ${name}`);
+            }
+            const module = await importer();
+            return module.default;
+        },
         setup: ({ App, props }) => {
             /* eslint-disable */
             // @ts-expect-error

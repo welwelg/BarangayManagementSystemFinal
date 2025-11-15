@@ -40,17 +40,37 @@ class HandleInertiaRequests extends Middleware
 
         return [
              ...parent::share($request),
+
+            // App Info
             'name'        => config('app.name'),
             'quote'       => ['message' => trim($message), 'author' => trim($author)],
-            'auth'        => [
-                'user'        => $request->user(),
-                'permissions' => fn() => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
+
+            // Flash messages
+            'flash'       => [
+                'message' => fn() => $request->session()->get('flash.message'),
             ],
+
+            // Authenticated User
+            'auth'        => [
+                'user' => $request->user() ? [
+                    'id'          => $request->user()->id,
+                    'name'        => $request->user()->name,
+                    'email'       => $request->user()->email,
+                    'roles'       => $request->user()->getRoleNames()->toArray(),
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
+
+                ] : null,
+            ],
+
+            // Ziggy routes
             'ziggy'       => fn(): array      => [
                  ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+
+            // Sidebar state
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
+
 }

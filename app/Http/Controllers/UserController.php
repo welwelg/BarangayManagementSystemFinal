@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Admin\Resident;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -10,13 +12,19 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    private function isCurrentUserSuperAdmin(): bool
+    {
+        $current = Auth::user();
+        return $current instanceof \App\Models\User  && $current->hasRole('superadmin');
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $users = User::with('roles')->get();
-        return Inertia::render('Users/Index', [
+        return Inertia::render('SuperAdmin/Users/Index', [
             'users' => $users,
         ]);
     }
@@ -24,11 +32,23 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return Inertia::render('Users/Create', [
-            'roles' => Role::pluck('name'),
+    public function create(Request $request
+    ) {
+        $roles = Auth::user()->hasRole('superadmin')
+            ? Role::pluck('name')
+            : Role::where('name', '!=', 'superadmin')->pluck('name');
+
+        $residents = null;
+
+        if ($request->has('resident')) {
+            $residents = Resident::find($request->resident);
+        }
+
+        return Inertia::render('SuperAdmin/Users/Create', [
+            'roles'     => $roles,
+            'residents' => $residents,
         ]);
+
     }
 
     /**
@@ -52,7 +72,11 @@ class UserController extends Controller
         ]);
 
         if ($request->has('roles') && ! empty($request->roles)) {
-            $user->syncRoles($request->roles);
+            $rolesToAssign = collect($request->roles ?? [])
+                ->filter(fn($r) => $r !== 'superadmin' || $this->isCurrentUserSuperAdmin())
+                ->values()
+                ->all();
+            $user->syncRoles($rolesToAssign);
         }
 
         // Redirect back to create page with success message
@@ -64,10 +88,12 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        return Inertia::render('Users/Show', [
+        return Inertia::render('SuperAdmin/Users/Show', [
             'user'      => User::find($id),
             'userRoles' => User::find($id)->roles->pluck('name'),
-            'roles'     => Role::pluck('name'),
+            'roles'     => $this->isCurrentUserSuperAdmin()
+                ? Role::pluck('name')
+                : Role::where('name', '!=', 'superadmin')->pluck('name'),
         ]);
 
     }
@@ -78,10 +104,15 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $user = User::find($id);
-        return Inertia::render('Users/Edit', [
+        if ($user && $user->hasRole('superadmin') && ! $this->isCurrentUserSuperAdmin()) {
+            abort(403);
+        }
+        return Inertia::render('SuperAdmin/Users/Edit', [
             'user'      => $user,
             'userRoles' => $user->roles->pluck('name'),
-            'roles'     => Role::pluck('name'),
+            'roles'     => $this->isCurrentUserSuperAdmin()
+                ? Role::pluck('name')
+                : Role::where('name', '!=', 'superadmin')->pluck('name'),
 
         ]);
     }
@@ -106,7 +137,10 @@ class UserController extends Controller
         ]);
 
         // Find and update the user (REMOVED the User::create() line!)
-        $user        = User::find($id);
+        $user = User::find($id);
+        if ($user->hasRole('superadmin') && ! $this->isCurrentUserSuperAdmin()) {
+            abort(403);
+        }
         $user->name  = $request->floating_name;
         $user->email = $request->floating_email;
 
@@ -116,7 +150,12 @@ class UserController extends Controller
         }
 
         $user->save();
-        $user->syncRoles($request->roles);
+        // Prevent non-superadmin from assigning superadmin role
+        $rolesToAssign = collect($request->roles ?? [])
+            ->filter(fn($r) => $r !== 'superadmin' || $this->isCurrentUserSuperAdmin())
+            ->values()
+            ->all();
+        $user->syncRoles($rolesToAssign);
 
         return to_route('users.index')->with('success', 'User updated successfully.');
     }
@@ -126,7 +165,11 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        User::destroy($id);
+        $user = User::findOrFail($id);
+        if ($user->hasRole('superadmin') && ! $this->isCurrentUserSuperAdmin()) {
+            abort(403);
+        }
+        $user->delete();
         return to_route('users.index');
     }
 }

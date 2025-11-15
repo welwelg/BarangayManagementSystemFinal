@@ -1,5 +1,4 @@
 import AppLayout from '@/layouts/app-layout';
-import { can } from '@/lib/can';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { CircleX } from 'lucide-react';
@@ -11,22 +10,22 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Create({ permissions }) {
+export default function Create() {
     const { data, setData, post, errors, processing } = useForm({
         floating_name: '',
         permissions: [] as string[],
     });
 
-    function handleCheckboxChange(permissionName, checked) {
-        if (checked) {
-            setData('permissions', [...data.permissions, permissionName]);
-        } else {
-            setData(
-                'permissions',
-                data.permissions.filter((p) => p !== permissionName),
-            );
-        }
-    }
+    // function handleCheckboxChange(permissionName, checked) {
+    //     if (checked) {
+    //         setData('permissions', [...data.permissions, permissionName]);
+    //     } else {
+    //         setData(
+    //             'permissions',
+    //             data.permissions.filter((p) => p !== permissionName),
+    //         );
+    //     }
+    // }
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('roles.store'));
@@ -67,7 +66,7 @@ export default function Create({ permissions }) {
                             {errors.floating_name && <div className="mt-1 text-sm text-red-600">{errors.floating_name}</div>}
                         </div>
 
-                        {/* Permissions */}
+                        {/* Permissions
                         <div className="mb-5">
                             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Permissions</label>
 
@@ -89,7 +88,7 @@ export default function Create({ permissions }) {
                             ))}
 
                             {errors.permissions && <div className="mt-1 text-sm text-red-600">{errors.permissions}</div>}
-                        </div>
+                        </div> */}
 
                         {/* Submit Button */}
                         <button

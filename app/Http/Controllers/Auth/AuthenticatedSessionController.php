@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -18,10 +17,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response
     {
-        return Inertia::render('auth/login', [
+                                               // 🔹 Try different possible paths based on your project structure
+        return Inertia::render('auth/login', [ // lowercase - try this first
             'canResetPassword' => Route::has('password.request'),
-            'status' => $request->session()->get('status'),
+            'status'           => $request->session()->get('status'),
         ]);
+
+        // 🔸 If above doesn't work, try:
+        // return Inertia::render('Auth/Login', [
+        // or
+        // return Inertia::render('login', [
     }
 
     /**
@@ -30,10 +35,20 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+
+        // 🔹 Role-based redirect
+        if ($user->hasRole('superadmin')) {
+            return redirect()->intended('/admin/dashboard');
+        } elseif ($user->hasRole('admin')) {
+            return redirect()->intended('/admin/dashboard');
+        } elseif ($user->hasRole('residentuser') || $user->hasRole('user')) {
+            return redirect()->intended('/residentuser/dashboard');
+        }
+
+        return redirect()->intended('/dashboard');
     }
 
     /**
@@ -42,7 +57,6 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

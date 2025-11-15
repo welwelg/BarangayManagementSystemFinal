@@ -1,7 +1,6 @@
 <?php
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 
@@ -20,13 +19,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Inertia::share('auth', function () {
-            $user = Auth::user();
+        // Global share for Inertia (auth user + roles + permissions)
+        Inertia::share([
+            'auth' => fn() => auth()->check()
+            ? [
+                'id'          => auth()->id(),
+                'name'        => auth()->user()->name,
+                'email'       => auth()->user()->email,
+                'roles'       => auth()->user()->getRoleNames(), // roles from Spatie
+                'permissions' => auth()->user()->getAllPermissions()->pluck('name'),
+            ]
+            : null,
+        ]);
 
-            return [
-                'user'        => $user,
-                'permissions' => $user?->getAllPermissions()->pluck('name') ?? [],
-            ];
-        });
+        Inertia::share([
+            'flash' => function () {
+                return [
+                    'success' => session('success'),
+                    'error'   => session('error'),
+                ];
+            },
+        ]);
+
     }
 }

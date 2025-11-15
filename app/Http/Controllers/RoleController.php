@@ -13,8 +13,12 @@ class RoleController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Roles/Index', [
-            'roles' => Role::with('permissions')->get(),
+        $roles = auth()->user()?->hasRole('superadmin')
+            ? Role::with('permissions')->get()
+            : Role::where('name', '!=', 'superadmin')->with('permissions')->get();
+
+        return Inertia::render('SuperAdmin/Roles/Index', [
+            'roles' => $roles,
         ]);
     }
 
@@ -23,7 +27,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Roles/Create', [
+        return Inertia::render('SuperAdmin/Roles/Create', [
             'permissions' => Permission::pluck('name'),
         ]);
 
@@ -34,14 +38,25 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'floating_name' => 'required',
-            'permissions'   => 'required',
+        // Security: prevent non-superadmin users from creating the superadmin role
+        if ($request->name === 'superadmin' && ! $request->user()->hasRole('superadmin')) {
+            abort(403, 'Not allowed to create superadmin role.');
+        }
+
+        // Validate modal inputs
+        $validated = $request->validate([
+            'name'          => 'required|string|max:255|unique:roles,name',
+            'permissions'   => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
         ]);
-        $role = Role::create(['name' => $request->floating_name]);
-        $role->syncPermissions($request->permissions);
-        return to_route('roles.index');
+
+        $role = Role::create(['name' => $validated['name']]);
+
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        return redirect()->route('roles.index');
     }
 
     /**
@@ -49,8 +64,11 @@ class RoleController extends Controller
      */
     public function show(string $id)
     {
-        $role = Role::find($id);
-        return Inertia::render('Roles/Show', [
+        $role = Role::findOrFail($id);
+        if ($role->name === 'superadmin' && ! auth()->user()?->hasRole('superadmin')) {
+            abort(403);
+        }
+        return Inertia::render('SuperAdmin/Roles/Show', [
             'role'        => $role,
             'permissions' => $role->permissions->pluck('name'),
         ]);
@@ -62,7 +80,10 @@ class RoleController extends Controller
     public function edit(string $id)
     {
         $role = Role::findOrFail($id);
-        return Inertia::render('Roles/Edit', [
+        if ($role->name === 'superadmin' && ! auth()->user()?->hasRole('superadmin')) {
+            abort(403);
+        }
+        return Inertia::render('SuperAdmin/Roles/Edit', [
             'role'            => $role,
             'rolePermissions' => $role->permissions->pluck('name'),
             'permissions'     => Permission::pluck('name'),
@@ -74,17 +95,28 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'floating_name' => 'required',
-            'permissions'   => 'required',
+
+        $role = Role::findOrFail($id);
+
+        //  Security: prevent non-superadmin users from touching superadmin role
+        if (($role->name === 'superadmin' || $request->name === 'superadmin') && ! $request->user()->hasRole('superadmin')) {
+            abort(403, 'You are not allowed to modify the superadmin role.');
+        }
+
+        $validated = $request->validate([
+            'name'          => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'permissions'   => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
         ]);
-        $role       = Role::find($id);
-        $role->name = $request->floating_name;
-        $role->save();
-        $role->syncPermissions($request->permissions);
-        return to_route('roles.index');
 
+        $role->update(['name' => $validated['name']]);
+
+        // If you’re updating permissions via modal
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        return redirect()->route('roles.index');
     }
 
     /**
@@ -92,7 +124,11 @@ class RoleController extends Controller
      */
     public function destroy(string $id)
     {
-        Role::destroy($id);
+        $role = Role::findOrFail($id);
+        if ($role->name === 'superadmin' && ! auth()->user()?->hasRole('superadmin')) {
+            abort(403);
+        }
+        $role->delete();
         return to_route('roles.index');
     }
 }

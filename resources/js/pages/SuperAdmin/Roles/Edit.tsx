@@ -68,24 +68,26 @@ export default function Edit({ role, permissions, rolePermissions }) {
 
                         {/* Permissions */}
                         <div className="mb-5">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Permissions</label>
-                            {permissions.map((permission) => (
-                                <div className="flex flex-col space-y-2">
-                                    <label key={permission} className="flex items-center space-x-2">
-                                        <input
-                                            checked={data.permissions.includes(permission)}
-                                            onChange={(e) => handleCheckboxChange(permission, e.target.checked)}
-                                            type="checkbox"
-                                            id={permission}
-                                            value={permission}
-                                            className="form-checkbox h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300">{permission}</span>
-                                    </label>
-                                </div>
-                            ))}
+                            <>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Permissions</label>
+                                {permissions.map((permission) => (
+                                    <div className="flex flex-col space-y-2">
+                                        <label key={permission} className="flex items-center space-x-2">
+                                            <input
+                                                checked={data.permissions.includes(permission)}
+                                                onChange={(e) => handleCheckboxChange(permission, e.target.checked)}
+                                                type="checkbox"
+                                                id={permission}
+                                                value={permission}
+                                                className="form-checkbox h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                                            />
+                                            <span className="text-gray-700 dark:text-gray-300">{permission}</span>
+                                        </label>
+                                    </div>
+                                ))}
 
-                            {errors.permissions && <div className="mt-1 text-sm text-red-600">{errors.permissions}</div>}
+                                {errors.permissions && <div className="mt-1 text-sm text-red-600">{errors.permissions}</div>}
+                            </>
                         </div>
 
                         {/* Submit Button */}
