@@ -22,10 +22,6 @@ import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Admin Dashboard',
-        href: '/admin/dashboard',
-    },
-    {
         title: 'Disaster Reports',
         href: '/residentuser/disaster-reports',
     },
@@ -71,7 +67,7 @@ interface PageProps {
 }
 
 export default function Index() {
-    const { disasterReports, filters, flash } = usePage().props as PageProps;
+    const { disasterReports, filters } = usePage().props as PageProps;
     const [processingId, setProcessingId] = useState<number | null>(null);
     const [selectedTab, setSelectedTab] = useState(filters.status || 'all');
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
@@ -131,19 +127,19 @@ export default function Index() {
                 return {
                     badge: 'bg-orange-500 hover:bg-orange-600 text-white font-medium',
                     cardClass:
-                        'bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border-orange-200 dark:border-orange-800',
+                        'bg-linear-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border-orange-200 dark:border-orange-800',
                 };
             case 'in-progress':
                 return {
                     badge: 'bg-blue-500 hover:bg-blue-600 text-white font-medium',
                     cardClass:
-                        'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800',
+                        'bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800',
                 };
             case 'resolved':
                 return {
                     badge: 'bg-emerald-500 hover:bg-emerald-600 text-white font-medium',
                     cardClass:
-                        'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800',
+                        'bg-linear-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800',
                 };
             default:
                 return {
@@ -186,27 +182,16 @@ export default function Index() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Disaster Report" />
 
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-                {/* Flash Message */}
-                {flash?.message && (
-                    <div className="mx-4 mt-4 rounded-md bg-green-50 p-4 sm:mx-6 dark:bg-green-900/50">
-                        <div className="flex">
-                            <div className="ml-3">
-                                <p className="text-sm font-medium text-green-800 dark:text-green-200">{flash.message}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
+            <div className="min-h-screen bg-linear-to-br from-slate-50 via-red-50 to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
                 {/* Header */}
                 <div className="border-b border-slate-200/60 bg-white/80 px-4 py-4 shadow-sm backdrop-blur-sm sm:px-6 dark:border-gray-700 dark:bg-gray-800/80">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="rounded-lg bg-gradient-to-br from-red-500 to-orange-500 p-2 shadow-md">
+                            <div className="rounded-lg bg-linear-to-br from-red-500 to-orange-500 p-2 shadow-md">
                                 <AlertTriangle className="h-5 w-6 text-white sm:h-6" />
                             </div>
                             <div>
-                                <h1 className="bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl dark:from-red-400 dark:to-orange-400">
+                                <h1 className="bg-linear-to-r from-red-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl dark:from-red-400 dark:to-orange-400">
                                     Disaster Reports
                                 </h1>
                             </div>
@@ -220,7 +205,7 @@ export default function Index() {
                     <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 lg:grid-cols-4">
                         <div className="rounded-lg border border-red-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-red-800/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-red-500 to-orange-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-red-500 to-orange-500 p-2 sm:p-3">
                                     <AlertTriangle className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -232,7 +217,7 @@ export default function Index() {
 
                         <div className="rounded-lg border border-orange-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-orange-800/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-orange-500 to-amber-500 p-2 sm:p-3">
                                     <Clock className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -244,7 +229,7 @@ export default function Index() {
 
                         <div className="rounded-lg border border-blue-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-blue-800/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-blue-500 to-indigo-500 p-2 sm:p-3">
                                     <Play className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -256,7 +241,7 @@ export default function Index() {
 
                         <div className="rounded-lg border border-emerald-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-emerald-800/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-emerald-500 to-teal-500 p-2 sm:p-3">
                                     <CheckCircle2 className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -286,7 +271,7 @@ export default function Index() {
                                 onClick={() => handleFilterChange('all')}
                                 className={`rounded-md px-3 py-2 text-xs font-medium whitespace-nowrap transition-all sm:px-4 sm:text-sm ${
                                     selectedTab === 'all'
-                                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
+                                        ? 'bg-linear-to-r from-red-500 to-orange-500 text-white shadow-md'
                                         : 'text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                 }`}
                             >
@@ -296,7 +281,7 @@ export default function Index() {
                                 onClick={() => handleFilterChange('pending')}
                                 className={`rounded-md px-3 py-2 text-xs font-medium whitespace-nowrap transition-all sm:px-4 sm:text-sm ${
                                     selectedTab === 'pending'
-                                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                                        ? 'bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md'
                                         : 'text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                 }`}
                             >
@@ -306,7 +291,7 @@ export default function Index() {
                                 onClick={() => handleFilterChange('in-progress')}
                                 className={`rounded-md px-3 py-2 text-xs font-medium whitespace-nowrap transition-all sm:px-4 sm:text-sm ${
                                     selectedTab === 'in-progress'
-                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                                        ? 'bg-linear-to-r from-blue-500 to-indigo-500 text-white shadow-md'
                                         : 'text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                 }`}
                             >
@@ -316,7 +301,7 @@ export default function Index() {
                                 onClick={() => handleFilterChange('resolved')}
                                 className={`rounded-md px-3 py-2 text-xs font-medium whitespace-nowrap transition-all sm:px-4 sm:text-sm ${
                                     selectedTab === 'resolved'
-                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                                        ? 'bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-md'
                                         : 'text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                 }`}
                             >
@@ -501,7 +486,7 @@ export default function Index() {
                                                 disabled={!link.url}
                                                 className={`min-w-[40px] rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                                                     link.active
-                                                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
+                                                        ? 'bg-linear-to-r from-red-500 to-orange-500 text-white shadow-md'
                                                         : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                                                 } disabled:cursor-not-allowed disabled:opacity-50`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}

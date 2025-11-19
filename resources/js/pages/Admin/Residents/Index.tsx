@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import { toast } from '@/lib/toast';
 
 import { type BreadcrumbItem } from '@/types';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
@@ -49,7 +50,7 @@ interface PageProps extends InertiaPageProps {
 }
 
 export default function Index() {
-    const { residents, flash } = usePage<PageProps>().props;
+    const { residents } = usePage<PageProps>().props;
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedGender, setSelectedGender] = useState('all');
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -66,8 +67,8 @@ export default function Index() {
         formData.append('file', file);
 
         router.post(route('admin.residents.import'), formData, {
-            onSuccess: () => alert('✅ Import successful!'),
-            onError: () => alert('❌ Import failed. Please check the file format.'),
+            onSuccess: () => toast.success('Import successful!'),
+            onError: () => toast.error('Import failed. Please check the file format.'),
         });
     };
 
@@ -85,7 +86,10 @@ export default function Index() {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this resident?')) {
-            router.delete(route('admin.residents.destroy', id));
+            router.delete(route('admin.residents.destroy', id), {
+                onSuccess: () => toast.success(' Resident deleted successfully!'),
+                onError: () => toast.error(' Failed to delete resident.'),
+            });
         }
     };
 
@@ -109,23 +113,12 @@ export default function Index() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Residents" />
 
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-                {/* Flash Message */}
-                {flash?.message && (
-                    <div className="mx-4 mt-4 rounded-md bg-green-50 p-4 sm:mx-6 dark:bg-green-900/50">
-                        <div className="flex">
-                            <div className="ml-3">
-                                <p className="text-sm font-medium text-green-800 dark:text-green-200">{flash.message}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
+            <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
                 {/* Header */}
                 <div className="border-b border-slate-200/60 bg-white/80 px-4 py-4 shadow-sm backdrop-blur-sm sm:px-6 dark:border-gray-700 dark:bg-gray-800/80">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 p-2 shadow-md">
+                            <div className="rounded-lg bg-linear-to-br from-blue-500 to-indigo-500 p-2 shadow-md">
                                 <Users className="h-5 w-6 text-white sm:h-6" />
                             </div>
                             <div>
@@ -133,7 +126,7 @@ export default function Index() {
                             </div>
                         </div>
                         <Link href={route('admin.residents.create')}>
-                            <button className="inline-flex items-center rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all hover:from-blue-700 hover:to-indigo-700">
+                            <button className="inline-flex items-center rounded-md bg-linear-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all hover:from-blue-700 hover:to-indigo-700">
                                 <UserPlus className="mr-2 h-4 w-4" />
                                 Add Resident
                             </button>
@@ -147,7 +140,7 @@ export default function Index() {
                     <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 lg:grid-cols-3">
                         <div className="rounded-lg border border-blue-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-gray-700/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-blue-500 to-indigo-500 p-2 sm:p-3">
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -159,7 +152,7 @@ export default function Index() {
 
                         <div className="rounded-lg border border-pink-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-gray-700/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-pink-500 to-rose-500 p-2 sm:p-3">
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -171,7 +164,7 @@ export default function Index() {
 
                         <div className="rounded-lg border border-blue-200/60 bg-white/80 p-3 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl sm:p-4 dark:border-gray-700/60 dark:bg-gray-800/80">
                             <div className="flex items-center space-x-2 sm:space-x-3">
-                                <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2 sm:p-3">
+                                <div className="rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 p-2 sm:p-3">
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
@@ -244,7 +237,7 @@ export default function Index() {
                     <div className="rounded-lg border border-slate-200/60 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/60 dark:bg-gray-800/80">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-slate-600 dark:text-gray-400">
-                                <thead className="bg-gradient-to-r from-slate-50 to-slate-100 text-xs text-slate-700 uppercase dark:from-gray-700 dark:to-gray-600 dark:text-gray-300">
+                                <thead className="bg-linear-to-r from-slate-50 to-slate-100 text-xs text-slate-700 uppercase dark:from-gray-700 dark:to-gray-600 dark:text-gray-300">
                                     <tr>
                                         <th className="px-4 py-3 font-semibold sm:px-6">Name</th>
                                         <th className="hidden px-4 py-3 font-semibold sm:px-6 md:table-cell">Age</th>
@@ -265,7 +258,7 @@ export default function Index() {
                                             >
                                                 <td className="px-4 py-4 sm:px-6">
                                                     <div className="flex items-center space-x-3">
-                                                        <div className="flex aspect-square h-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-sm font-semibold text-white ring-2 ring-blue-200 dark:ring-blue-700">
+                                                        <div className="flex aspect-square h-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-indigo-500 text-sm font-semibold text-white ring-2 ring-blue-200 dark:ring-blue-700">
                                                             <span className="leading-none">
                                                                 {resident.first_name?.charAt(0).toUpperCase()}
                                                                 {resident.last_name?.charAt(0).toUpperCase()}
@@ -273,9 +266,9 @@ export default function Index() {
                                                         </div>
                                                         <div>
                                                             <p className="font-medium text-slate-800 dark:text-slate-200">
-                                                                {resident.first_name} {resident.middle_name || ''} {resident.last_name}{' '}
-                                                                {resident.suffix || ''}
+                                                                {`${resident.last_name}, ${resident.first_name} ${resident.middle_name || ''} ${resident.suffix || ''}`.trim()}
                                                             </p>
+
                                                             <p className="text-xs text-slate-500 md:hidden dark:text-slate-400">
                                                                 Age {resident.age} • {resident.zone}
                                                             </p>
@@ -356,7 +349,7 @@ export default function Index() {
                                             preserveScroll
                                             className={`inline-flex items-center rounded-md px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
                                                 link.active
-                                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                                                    ? 'bg-linear-to-r from-blue-500 to-indigo-500 text-white'
                                                     : link.url
                                                       ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-gray-700'
                                                       : 'cursor-not-allowed border border-slate-200 bg-white text-slate-400 opacity-50 dark:border-slate-600 dark:bg-gray-800'

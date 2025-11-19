@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { MdLocalPostOffice } from 'react-icons/md';
+import { toast } from 'sonner';
 
 const breadcrumbs = [
     {
@@ -26,7 +27,14 @@ export default function Create() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route('announcements.store'));
+        post(route('announcements.store'), {
+            onSuccess: () => {
+                toast.success('Announcement posted successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to post announcement. Please try again.');
+            },
+        });
     }
 
     return (
