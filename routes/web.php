@@ -200,9 +200,11 @@ Route::middleware(['role:admin|superadmin'])->group(function () {
     // ===============================
     // 🚨 Typhoon ROUTES
     // ===============================
-    Route::get('/admin/typhoon-monitoring', [App\Http\Controllers\Admin\TyphoonController::class, 'index']);
-    Route::get('/typhoon/data', [App\Http\Controllers\Admin\TyphoonController::class, 'fetchTyphoonData']);
-    Route::get('/typhoon/forecast', [App\Http\Controllers\Admin\TyphoonController::class, 'fetchWeeklyForecast']);
+    Route::prefix('admin')->group(function () {
+        Route::get('/typhoon-monitoring', [App\Http\Controllers\Admin\TyphoonController::class, 'index']);
+        Route::get('/typhoon/data', [App\Http\Controllers\Admin\TyphoonController::class, 'fetchTyphoonData']);
+        Route::get('/typhoon/forecast', [App\Http\Controllers\Admin\TyphoonController::class, 'fetchWeeklyForecast']);
+    });
 
 });
 

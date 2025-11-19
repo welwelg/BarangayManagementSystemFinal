@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { toast } from '@/lib/toast';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { IoIosPeople } from 'react-icons/io';
 
 interface Props {
@@ -31,8 +32,6 @@ const breadcrumbs = [
 ];
 
 export default function Edit({ resident }: Props) {
-    const { flash } = usePage().props;
-
     const { data, setData, put, processing, errors } = useForm({
         first_name: resident.first_name || '',
         middle_name: resident.middle_name || '',
@@ -49,7 +48,14 @@ export default function Edit({ resident }: Props) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        put(route('admin.residents.update', resident.id));
+        put(route('admin.residents.update', resident.id), {
+            onSuccess: () => {
+                toast.success('Resident updated successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to update resident. Please check the form for errors.');
+            },
+        });
     }
 
     return (

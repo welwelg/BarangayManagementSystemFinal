@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 import { MdLocalPostOffice } from 'react-icons/md';
+import { toast } from 'sonner';
 
 const breadcrumbs = [
     {
@@ -38,7 +39,14 @@ export default function Edit({ announcement }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        put(route('announcements.update', announcement.id));
+        put(route('announcements.update', announcement.id), {
+            onSuccess: () => {
+                toast.success('Announcement updated successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to update announcement. Please try again.');
+            },
+        });
     }
 
     return (

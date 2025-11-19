@@ -24,8 +24,12 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('roles')->get();
+        $roles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
+
         return Inertia::render('SuperAdmin/Users/Index', [
             'users' => $users,
+            'roles' => $roles,
+
         ]);
     }
 

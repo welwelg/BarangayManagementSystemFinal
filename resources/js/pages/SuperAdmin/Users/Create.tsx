@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { toast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FolderKanban } from 'lucide-react';
@@ -26,7 +27,14 @@ export default function Create({ roles }) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('users.store'));
+        post(route('users.store'), {
+            onSuccess: () => {
+                toast.success('User created successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to create user.');
+            },
+        });
     };
 
     return (

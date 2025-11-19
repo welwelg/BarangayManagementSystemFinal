@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import { toast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { CircleX } from 'lucide-react';
@@ -42,7 +43,14 @@ export default function Edit({ user, userRoles, roles }: EditProps) {
             alert('⚠️ Passwords do not match.');
             return;
         }
-        put(route('users.update', user.id));
+        put(route('users.update', user.id), {
+            onSuccess: () => {
+                toast.success('User updated successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to update user.');
+            },
+        });
     };
     function handleCheckboxChange(roleName, checked) {
         if (checked) {

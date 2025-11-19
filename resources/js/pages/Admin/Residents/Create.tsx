@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { IoIosPeople } from 'react-icons/io';
+import { toast } from 'sonner';
 
 const breadcrumbs = [
     {
@@ -15,8 +16,6 @@ const breadcrumbs = [
 ];
 
 export default function Create() {
-    const { flash } = usePage().props;
-
     // --- Inertia useForm state ---
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
@@ -33,7 +32,14 @@ export default function Create() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route('admin.residents.store'));
+        post(route('admin.residents.store'), {
+            onSuccess: () => {
+                toast.success('Resident added successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to add resident. Please check the form for errors.');
+            },
+        });
     }
 
     return (
