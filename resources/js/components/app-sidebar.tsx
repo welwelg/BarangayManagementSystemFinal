@@ -8,6 +8,7 @@ import { CloudRainWind, FolderKanban, LayoutDashboard, Megaphone, MessageSquareW
 import { AiFillMessage } from 'react-icons/ai';
 import { LuShieldEllipsis } from 'react-icons/lu';
 import AppLogo from './app-logo';
+import { LuLogs } from 'react-icons/lu';
 
 // All navigation items with roles
 const allNavItems: NavItem[] = [
@@ -103,6 +104,14 @@ const allNavItems: NavItem[] = [
         actions: ['view', 'create', 'edit', 'delete'],
         resource: 'disaster-reports',
     },
+    {
+        title: 'Blotter',
+        href: '/admin/blotter',
+        icon: LuLogs,
+        roles: ['admin', 'superadmin'],
+        actions: ['view', 'create', 'edit', 'delete'],
+        resource: 'blotter',
+    },
 
     // Resident User items
     {
@@ -152,6 +161,14 @@ const allNavItems: NavItem[] = [
         roles: ['user'],
         actions: ['view', 'create', 'edit', 'delete'],
         resource: 'residentuser-disaster-reports',
+    },
+     {
+            title: 'Blotter',
+            href: '/residentuser/blotter',
+            icon: LuLogs,
+            roles: ['user'],
+            actions: ['view', 'create', 'edit', 'delete'],
+            resource: 'residentuser-blotter',
     },
 ];
 

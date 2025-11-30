@@ -32,7 +32,7 @@ createInertiaApp({
             <>
                 <App {...props} />
                 <Toaster position="top-right" richColors expand={true} closeButton={true} duration={3000} />
-            </>,
+            </>
         );
     },
     progress: {

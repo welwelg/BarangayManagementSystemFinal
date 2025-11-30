@@ -12,7 +12,7 @@ import { type BreadcrumbItem } from '@/types';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ChevronLeft, Inbox, MoreVertical, Radio, Search, Send } from 'lucide-react';
+import { ArrowLeft, Inbox, MoreVertical, Radio, Search, Send } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Messages', href: '/admin/message' }];
@@ -77,7 +77,8 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [messageText, setMessageText] = useState('');
     const [isSending, setIsSending] = useState(false);
-    const [showSidebar, setShowSidebar] = useState(true);
+    const [showMobileChat, setShowMobileChat] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { flash } = usePage<PageProps>().props;
     const markedAsReadRef = useRef(new Set<number>());
@@ -87,7 +88,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         otherUserId: selectedConversation?.userId ?? null,
     });
 
-    // Handle flash messages
     useEffect(() => {
         if (flash?.message) toast.success(flash.message);
         if (flash?.error) toast.error(flash.error);
@@ -95,12 +95,10 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
 
     useEffect(() => setLocalUnreadCount(unreadCount), [unreadCount]);
 
-    // Auto scroll to bottom when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [selectedConversation?.messages]);
 
-    // Real-time message listener
     useEffect(() => {
         if (!window.Echo) return;
 
@@ -147,7 +145,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         };
     }, [auth.user.id]);
 
-    // Group messages into conversations (threads)
     const conversations = useMemo(() => {
         const convMap = new Map<number, Conversation>();
 
@@ -207,7 +204,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         );
     };
 
-    // Auto mark messages as read when conversation is opened
     useEffect(() => {
         if (selectedConversation) {
             selectedConversation.messages.forEach((msg) => {
@@ -282,6 +278,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
             onSuccess: () => {
                 if (selectedConversation && selectedConversation.messages.length === 1) {
                     setSelectedConversation(null);
+                    setShowMobileChat(false);
                 }
             },
         });
@@ -289,14 +286,11 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
 
     const handleSelectConversation = (conv: Conversation) => {
         setSelectedConversation(conv);
-        // Hide sidebar on mobile when conversation is selected
-        if (window.innerWidth < 768) {
-            setShowSidebar(false);
-        }
+        setShowMobileChat(true);
     };
 
     const handleBackToList = () => {
-        setShowSidebar(true);
+        setShowMobileChat(false);
         setSelectedConversation(null);
     };
 
@@ -313,21 +307,19 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Messages" />
 
-            {/* Mobile & Tablet: Responsive Container */}
-            <div className="flex h-[calc(100vh-180px)] flex-col overflow-hidden rounded-lg border bg-card lg:flex-row">
-                {/* Sidebar - Conversations List */}
-                <div className={`flex w-full flex-col border-r lg:w-80 ${showSidebar ? '' : 'hidden md:flex'}`}>
-                    {/* Header Section */}
-                    <div className="space-y-3 border-b bg-card p-3 sm:p-4">
-                        <div className="flex items-center justify-between text-sky-950 dark:text-sky-50">
-                            <div className="min-w-0 flex-1">
+            <div className="flex h-[calc(100vh-120px)] overflow-hidden rounded-lg border bg-card sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)]">
+                {/* Conversations List */}
+                <div className={`flex w-full flex-col border-r md:w-80 lg:w-96 ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
+                    <div className="space-y-3 border-b p-3 sm:p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
                                 <h2 className="text-base font-semibold sm:text-lg">Chats</h2>
-                                <p className="text-xs text-muted-foreground text-sky-900 dark:text-sky-100">
+                                <p className="text-xs text-muted-foreground">
                                     {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
                                 </p>
                             </div>
                             {localUnreadCount > 0 && (
-                                <Badge variant="destructive" className="flex-shrink-0">
+                                <Badge variant="destructive" className="text-xs">
                                     {localUnreadCount}
                                 </Badge>
                             )}
@@ -336,27 +328,24 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                         {/* Action Buttons */}
                         <div className="flex gap-2">
                             <Link href={route('admin.message.create')} className="flex-1">
-                                <Button
-                                    className="w-full border-1 border-sky-400 bg-sky-400 text-sky-950 hover:bg-sky-500 hover:text-sky-50 dark:border-sky-800 dark:bg-sky-700 dark:text-sky-50 dark:hover:bg-sky-600"
-                                    size="sm"
-                                >
+                                <Button className="w-full" size="sm">
                                     <Send className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                                     <span className="hidden sm:inline">New Chat</span>
                                     <span className="sm:hidden">Chat</span>
                                 </Button>
                             </Link>
                             <Link href={route('admin.message.broadcast')}>
-                                <Button className="border-sky-950 dark:border-sky-50" variant="outline" size="sm">
-                                    <Radio className="h-4 w-4 text-sky-950 dark:text-sky-50" />
+                                <Button variant="outline" size="sm">
+                                    <Radio className="h-4 w-4" />
                                 </Button>
                             </Link>
                         </div>
 
                         {/* Search Bar */}
                         <div className="relative">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-sky-950 dark:text-sky-50" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
-                                placeholder="Search..."
+                                placeholder="Search conversations..."
                                 className="pl-9 text-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -380,43 +369,40 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                     <button
                                         key={conv.userId}
                                         onClick={() => handleSelectConversation(conv)}
-                                        className={`flex w-full items-start gap-2 border-b p-2 text-left transition-colors hover:bg-accent sm:gap-3 sm:p-3 ${
+                                        className={`flex w-full items-start gap-2 border-b p-3 text-left transition-colors hover:bg-accent sm:gap-3 ${
                                             isSelected ? 'bg-accent' : ''
                                         } ${conv.unreadCount > 0 ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''}`}
                                     >
-                                        {/* Avatar */}
-                                        <Avatar className="h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10">
+                                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                                             <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                                                 {getInitials(conv.userName)}
                                             </AvatarFallback>
                                         </Avatar>
-
-                                        {/* Content */}
-                                        <div className="min-w-0 flex-1">
-                                            {/* Header: Username + Date + Unread badge */}
+                                        <div className="flex-1 overflow-hidden">
                                             <div className="flex items-start justify-between gap-2">
-                                                {/* Username */}
-                                                <span className="truncate text-xs font-semibold sm:text-sm">{conv.userName}</span>
+                                                <span className="max-w-[60%] truncate text-xs font-semibold sm:max-w-[70%] sm:text-sm">
+                                                    {conv.userName}
+                                                </span>
 
-                                                {/* Date + Unread Badge */}
                                                 <div className="flex flex-shrink-0 flex-col items-end text-right leading-tight">
-                                                    <span className="text-[10px] text-muted-foreground sm:text-xs">
+                                                    <span className="text-[10px] text-muted-foreground sm:text-[11px]">
                                                         {format(new Date(conv.lastMessage.created_at), 'MMM d')}
                                                     </span>
 
                                                     {conv.unreadCount > 0 && (
-                                                        <span className="mt-0.5 flex h-4 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white sm:h-5 sm:min-w-[1.5rem] sm:text-[11px]">
+                                                        <span className="mt-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white sm:h-5 sm:min-w-[1.25rem] sm:text-[10px]">
                                                             {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            {/* Message Preview */}
-                                            <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-muted-foreground sm:mt-0.5 sm:text-xs">
-                                                {lastMsgIsSent && <span className="font-medium">You: </span>}
-                                                {conv.lastMessage.body}
-                                            </p>
+                                            <div className="mt-0.5 flex items-center gap-2">
+                                                <p className="flex-1 truncate text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
+                                                    {lastMsgIsSent && <span className="font-medium">You: </span>}
+                                                    {conv.lastMessage.body}
+                                                </p>
+                                            </div>
                                         </div>
                                     </button>
                                 );
@@ -425,28 +411,28 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                     </div>
                 </div>
 
-                {/* Chat Thread - Main Content */}
-                <div className="relative flex flex-1 flex-col bg-card">
+                {/* Chat Thread */}
+                <div className={`flex flex-1 flex-col ${showMobileChat ? 'flex' : 'hidden md:flex'}`}>
                     {selectedConversation ? (
                         <>
                             {/* Chat Header */}
                             <div className="flex items-center gap-2 border-b bg-background p-3 sm:gap-3 sm:p-4">
-                                {/* Back Button - Mobile Only */}
-                                <Button variant="ghost" size="icon" onClick={handleBackToList} className="h-8 w-8 sm:h-10 sm:w-10 md:hidden">
-                                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleBackToList}
+                                    className="md:hidden"
+                                >
+                                    <ArrowLeft className="h-5 w-5" />
                                 </Button>
-
-                                {/* Avatar */}
-                                <Avatar className="h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10">
+                                <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                                     <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                                         {getInitials(selectedConversation.userName)}
                                     </AvatarFallback>
                                 </Avatar>
-
-                                {/* User Info */}
-                                <div className="min-w-0 flex-1">
-                                    <h3 className="truncate text-sm font-semibold sm:text-base">{selectedConversation.userName}</h3>
-                                    <p className="truncate text-xs text-muted-foreground">{selectedConversation.userEmail}</p>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-semibold sm:text-base">{selectedConversation.userName}</h3>
+                                    <p className="text-[10px] text-muted-foreground sm:text-xs">{selectedConversation.userEmail}</p>
                                 </div>
                             </div>
 
@@ -458,35 +444,28 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                         const isSent = message.sender_id === auth.user.id;
 
                                         return (
-                                            <div key={message.id} className={`flex gap-1 sm:gap-2 ${isSent ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                {/* Avatar */}
-                                                <Avatar className="h-6 w-6 flex-shrink-0 sm:h-8 sm:w-8">
+                                            <div key={message.id} className={`flex gap-2 ${isSent ? 'flex-row-reverse' : 'flex-row'}`}>
+                                                <Avatar className="h-7 w-7 flex-shrink-0 sm:h-8 sm:w-8">
                                                     <AvatarFallback
-                                                        className={`text-xs ${isSent ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                                                        className={isSent ? 'bg-primary text-[10px] text-primary-foreground sm:text-xs' : 'bg-muted text-[10px] sm:text-xs'}
                                                     >
                                                         {getInitials(isSent ? auth.user.name : selectedConversation.userName)}
                                                     </AvatarFallback>
                                                 </Avatar>
-
-                                                {/* Message Bubble */}
-                                                <div
-                                                    className={`flex max-w-xs flex-col gap-0.5 sm:max-w-sm sm:gap-1 md:max-w-md lg:max-w-lg ${isSent ? 'items-end' : 'items-start'}`}
-                                                >
+                                                <div className={`flex max-w-[85%] flex-col gap-1 sm:max-w-[70%] ${isSent ? 'items-end' : 'items-start'}`}>
                                                     <div
-                                                        className={`group relative rounded-2xl px-3 py-2 break-words sm:px-4 sm:py-3 ${
+                                                        className={`group relative rounded-2xl px-3 py-2 ${
                                                             isSent ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                                         }`}
                                                     >
-                                                        <p className="text-xs break-words whitespace-pre-wrap sm:text-sm">{message.body}</p>
-
-                                                        {/* Message Actions Dropdown */}
+                                                        <p className="whitespace-pre-wrap text-xs sm:text-sm">{message.body}</p>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className={`absolute top-1/2 h-6 w-6 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 ${
-                                                                        isSent ? '-left-8 sm:-left-10' : '-right-8 sm:-right-10'
+                                                                        isSent ? '-left-7 sm:-left-8' : '-right-7 sm:-right-8'
                                                                     }`}
                                                                 >
                                                                     <MoreVertical className="h-3 w-3" />
@@ -494,42 +473,15 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                                             </DropdownMenuTrigger>
 
                                                             <DropdownMenuContent align={isSent ? 'start' : 'end'}>
-                                                                {!isSent && (
-                                                                    <>
-                                                                        <DropdownMenuItem onClick={() => console.log('Reply to', message.id)}>
-                                                                            Reply
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleDelete(message.id)}
-                                                                            className="text-red-600 focus:text-red-600"
-                                                                        >
-                                                                            Delete
-                                                                        </DropdownMenuItem>
-                                                                    </>
-                                                                )}
-                                                                {isSent && (
-                                                                    <>
-                                                                        {!message.is_read && (
-                                                                            <DropdownMenuItem onClick={() => console.log('Edit message', message.id)}>
-                                                                                Edit
-                                                                            </DropdownMenuItem>
-                                                                        )}
-                                                                        <DropdownMenuItem onClick={() => console.log('Reply to', message.id)}>
-                                                                            Reply
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleDelete(message.id)}
-                                                                            className="text-red-600 focus:text-red-600"
-                                                                        >
-                                                                            Delete
-                                                                        </DropdownMenuItem>
-                                                                    </>
-                                                                )}
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDelete(message.id)}
+                                                                    className="text-red-600 focus:text-red-600"
+                                                                >
+                                                                    Delete
+                                                                </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
-
-                                                    {/* Message Timestamp */}
                                                     <span className="px-2 text-[10px] text-muted-foreground sm:text-xs">
                                                         {format(new Date(message.created_at), 'h:mm a')}
                                                     </span>
@@ -538,24 +490,19 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                         );
                                     })}
 
-                                {/* Scroll Target */}
                                 <div ref={messagesEndRef} />
-
-                                {/* Typing Indicator */}
-                                {isTyping && (
-                                    <p className="text-xs text-muted-foreground italic sm:text-xs">{selectedConversation.userName} is typing...</p>
-                                )}
+                                {isTyping && <div className="mt-1 text-xs italic text-gray-500 sm:text-sm">{selectedConversation.userName} is typing...</div>}
                             </div>
 
                             {/* Message Input */}
                             <div className="border-t bg-background p-2 sm:p-4">
-                                <form onSubmit={handleSendMessage} className="flex items-end gap-1 sm:gap-2">
-                                    <div className="flex flex-1 items-center gap-2 rounded-full border bg-muted/50 px-3 py-1.5 sm:px-4 sm:py-2">
+                                <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                                    <div className="flex flex-1 items-center gap-2 rounded-full border bg-muted/50 px-3 py-2 sm:px-4">
                                         <Textarea
                                             value={messageText}
                                             onChange={(e) => {
-                                                setMessageText(e.target.value);
                                                 sendTyping();
+                                                setMessageText(e.target.value);
                                             }}
                                             placeholder="Type a message..."
                                             className="min-h-0 flex-1 resize-none border-0 bg-transparent p-0 text-xs focus-visible:ring-0 sm:text-sm"
@@ -571,22 +518,20 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                     <Button
                                         type="submit"
                                         size="icon"
-                                        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10"
+                                        className="flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10"
                                         disabled={!messageText.trim() || isSending}
                                     >
-                                        {isSending ? <Spinner className="h-3 w-3 sm:h-4 sm:w-4" /> : <Send className="h-3 w-3 sm:h-4 sm:w-4" />}
+                                        {isSending ? <Spinner className="h-4 w-4" /> : <Send className="h-4 w-4" />}
                                     </Button>
                                 </form>
                             </div>
                         </>
                     ) : (
-                        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4 sm:gap-3">
+                        <div className="hidden flex-1 flex-col items-center justify-center gap-3 md:flex">
                             <Inbox className="h-12 w-12 text-muted-foreground sm:h-16 sm:w-16" />
                             <div className="text-center">
                                 <h3 className="text-base font-semibold sm:text-lg">Your Messages</h3>
-                                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                                    {window.innerWidth < 768 ? 'Select a conversation to chat' : 'Select a conversation to start chatting'}
-                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Select a conversation to start chatting</p>
                             </div>
                         </div>
                     )}

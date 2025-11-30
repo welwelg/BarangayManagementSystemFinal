@@ -17,7 +17,11 @@ export default defineConfig({
     resolve: {
         alias: {
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
-            
+
         },
+    },
+    server: {
+        port: 5173,
+        strictPort: true,
     },
 });

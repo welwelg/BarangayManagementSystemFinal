@@ -33,5 +33,5 @@ export default function GlobalMessageListener() {
         };
     }, [auth?.user?.id]);
 
-    return null; // This component doesn't render anything
+    return null;
 }

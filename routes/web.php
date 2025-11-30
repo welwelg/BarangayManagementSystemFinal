@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\ResidentController;
+use App\Http\Controllers\Admin\BlotterController;
+
 use App\Http\Controllers\PermissionManagementController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -8,17 +10,18 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// ✅ Landing Page
+// Landing Page
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-// ✅ Authenticated & Verified Routes
+// Authenticated & Verified Routes
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Broadcast::routes(['middleware' => ['auth:sanctum']]);
+    //Broadcast::routes(['middleware' => ['auth:sanctum']]);
+    Broadcast::routes(['middleware' => ['web', 'auth']]);
 
-    // ✅ Default Dashboard (fallback)
+    // Default Dashboard (fallback)
     Route::get('dashboard', fn() => Inertia::render('dashboard'))->name('dashboard');
 
     // ===============================
@@ -206,6 +209,36 @@ Route::middleware(['role:admin|superadmin'])->group(function () {
         Route::get('/typhoon/forecast', [App\Http\Controllers\Admin\TyphoonController::class, 'fetchWeeklyForecast']);
     });
 
+    // ===============================
+    // 📋 BLOTTER ROUTES (Admin)
+    // ===============================
+    Route::resource('/admin/blotter', App\Http\Controllers\Admin\BlotterController::class, [
+        'names' => [
+            'index'   => 'admin.blotter.index',
+            'create'  => 'admin.blotter.create',
+            'store'   => 'admin.blotter.store',
+            'show'    => 'admin.blotter.show',
+            'edit'    => 'admin.blotter.edit',
+            'update'  => 'admin.blotter.update',
+            'destroy' => 'admin.blotter.destroy',
+        ],
+    ])->middleware([
+        'index'   => 'permission:blotter.view',
+        'create'  => 'permission:blotter.create',
+        'store'   => 'permission:blotter.create',
+        'show'    => 'permission:blotter.view',
+        'edit'    => 'permission:blotter.edit',
+        'update'  => 'permission:blotter.edit',
+        'destroy' => 'permission:blotter.delete',
+    ]);
+
+    Route::put('/admin/blotter/{blotter}/approve', [App\Http\Controllers\Admin\BlotterController::class, 'approve'])
+        ->middleware('permission:blotter.edit')
+        ->name('admin.blotter.approve');
+
+    Route::put('/admin/blotter/{blotter}/reject', [App\Http\Controllers\Admin\BlotterController::class, 'reject'])
+        ->middleware('permission:blotter.edit')
+        ->name('admin.blotter.reject');
 });
 
 // ===============================
@@ -308,6 +341,28 @@ Route::middleware(['role:user'])->group(function () {
     Route::get('/typhoon/data', [App\Http\Controllers\ResidentUser\TyphoonController::class, 'fetchTyphoonData']);
     Route::get('/typhoon/forecast', [App\Http\Controllers\ResidentUser\TyphoonController::class, 'fetchWeeklyForecast']);
 
+    // ===============================
+    // 📋 BLOTTER ROUTES (RESIDENTUSER/USER)
+    // ===============================
+   Route::resource('/residentuser/blotter', App\Http\Controllers\ResidentUser\BlotterController::class, [
+        'names' => [
+            'index'   => 'residentuser.blotter.index',
+            'create'  => 'residentuser.blotter.create',
+            'store'   => 'residentuser.blotter.store',
+            'show'    => 'residentuser.blotter.show',
+            'edit'    => 'residentuser.blotter.edit',
+            'update'  => 'residentuser.blotter.update',
+            'destroy' => 'residentuser.blotter.destroy',
+        ],
+    ])->middleware([
+        'index'   => 'permission:residentuser-blotter.view',
+        'create'  => 'permission:residentuser-blotter.create',
+        'store'   => 'permission:residentuser-blotter.create',
+        'show'    => 'permission:residentuser-blotter.view',
+        'edit'    => 'permission:residentuser-blotter.edit',
+        'update'  => 'permission:residentuser-blotter.edit',
+        'destroy' => 'permission:residentuser-blotter.delete',
+    ]);
 });
 
 // ===============================

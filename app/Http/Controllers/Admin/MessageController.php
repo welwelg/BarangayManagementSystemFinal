@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\User;
@@ -76,7 +77,8 @@ class MessageController extends Controller
         $message->load('sender:id,name,email');
 
         // Broadcast the event
-        broadcast(new \App\Events\MessageSent($message))->toOthers();
+        // broadcast(new \App\Events\MessageSent($message))->toOthers();
+         broadcast(new MessageSent($message))->toOthers();
 
         return redirect()->route('admin.message.index')
             ->with('flash.message', 'Message sent successfully!');
