@@ -16,7 +16,7 @@ class ResidentController extends Controller
      */
     public function index()
     {
-        $residents = Resident::latest()->paginate(10);
+        $residents = Resident::orderBy('last_name', 'asc')->paginate(10);
 
         return Inertia::render('Admin/Residents/Index', [
             'residents' => $residents,

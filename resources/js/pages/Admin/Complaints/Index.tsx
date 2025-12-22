@@ -3,36 +3,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { PageProps } from '@inertiajs/core'; // Added import for PageProps
 import { Head, router, usePage } from '@inertiajs/react';
 import { CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Admin Dashboard',
-        href: '/admin/dashboard',
-    },
     {
         title: 'Complaints',
         href: '/admin/complaints',
     },
 ];
 
-export default function Index() {
-    const { complaints } = usePage().props as {
-        complaints: {
-            id: number;
-            title: string;
-            description: string;
-            status: string;
-            created_at: string;
-            resolved_at?: string;
-            user: { name: string };
-            handler?: { name: string };
-        }[];
-    };
+interface Complaint {
+    id: number;
+    title: string;
+    description: string;
+    status: string;
+    created_at: string;
+    resolved_at?: string;
+    user: { name: string };
+    handler?: { name: string };
+}
 
-    // 🆕 Expanded filter state: Pwede nang maging date-based o status-based
+interface PagePropsWithComplaints extends PageProps {
+    complaints: Complaint[];
+}
+
+export default function Index() {
+    const { complaints } = usePage<PagePropsWithComplaints>().props;
+
+    // Expanded filter state: Pwede nang maging date-based o status-based
     const [filter, setFilter] = useState<'all' | 'today' | 'yesterday' | 'older' | 'pending' | 'resolved'>('all');
     const [processing, setProcessing] = useState(false);
 
@@ -61,19 +63,19 @@ export default function Index() {
                 {
                     onFinish: () => setProcessing(false),
                     onSuccess: () => {
-                        alert('Complaint marked as resolved!');
-                        // 🆕 Optional: Auto-switch to 'resolved' filter pagkatapos mag-resolve
+                        toast.success('Complaint marked as resolved!');
+
                         setFilter('resolved');
                     },
                     onError: () => {
-                        alert('Failed to resolve complaint.');
+                        toast.error('Failed to resolve complaint.');
                     },
                 },
             );
         }
     }
 
-    // 🧮 Updated Filtering logic: Suporta na para sa status at date
+    //  Updated Filtering logic: Suporta na para sa status at date
     const now = new Date();
     const todayStr = now.toDateString();
     const yesterday = new Date(now);
@@ -100,54 +102,56 @@ export default function Index() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manage Complaints" />
 
-            <div className="p-6">
-                <h1 className="mb-6 text-2xl font-bold">Complaints Management</h1>
-
-                {/* 📊 Dashboard Stats (hindi binago, pero updated counts) */}
+            <div className="bg-background p-6 text-foreground">
+                <h1 className="mb-6 text-2xl font-bold text-foreground">Complaints Management</h1>
+                {/* 📊 Dashboard Stats (updated for dark mode) */}
                 <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <Card className="border border-orange-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <Card className="border border-border bg-card text-card-foreground shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                         <CardContent className="p-4">
                             <div className="flex items-center space-x-3">
-                                <div className="rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 p-2">
+                                <div className="rounded-lg bg-linear-to-br from-orange-500 to-amber-500 p-2">
                                     <MessageSquare className="h-5 w-5 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-orange-600">{complaints.length}</p>
-                                    <p className="text-sm text-slate-500">Total Complaints</p>
+                                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{complaints.length}</p>
+                                    <p className="text-sm text-muted-foreground">Total Complaints</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border border-orange-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <Card className="border border-border bg-card text-card-foreground shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                         <CardContent className="p-4">
                             <div className="flex items-center space-x-3">
-                                <div className="rounded-lg bg-gradient-to-br from-orange-400 to-yellow-500 p-2">
+                                <div className="rounded-lg bg-linear-to-br from-orange-400 to-yellow-500 p-2">
                                     <Clock className="h-5 w-5 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-orange-600">{complaints.filter((c) => c.status === 'pending').length}</p>
-                                    <p className="text-sm text-slate-500">Pending</p>
+                                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                                        {complaints.filter((c) => c.status === 'pending').length}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">Pending</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border border-emerald-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <Card className="border border-border bg-card text-card-foreground shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                         <CardContent className="p-4">
                             <div className="flex items-center space-x-3">
-                                <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 p-2">
+                                <div className="rounded-lg bg-linear-to-br from-emerald-500 to-teal-500 p-2">
                                     <CheckCircle className="h-5 w-5 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-emerald-600">{complaints.filter((c) => c.status === 'resolved').length}</p>
-                                    <p className="text-sm text-slate-500">Resolved</p>
+                                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                        {complaints.filter((c) => c.status === 'resolved').length}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">Resolved</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-
                 {/* 🔎 Updated Filter buttons: Nagdagdag ng Pending at Resolved */}
                 <div className="mb-4 flex flex-wrap gap-2">
                     {/* Date-based filters */}
@@ -167,32 +171,31 @@ export default function Index() {
                     <Button
                         variant={filter === 'pending' ? 'default' : 'outline'}
                         onClick={() => setFilter('pending')}
-                        className="bg-orange-500 text-white hover:bg-orange-600"
+                        className="bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
                     >
                         Pending
                     </Button>
                     <Button
                         variant={filter === 'resolved' ? 'default' : 'outline'}
                         onClick={() => setFilter('resolved')}
-                        className="bg-emerald-500 text-white hover:bg-emerald-600"
+                        className="bg-emerald-500 text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700"
                     >
                         Resolved
                     </Button>
                 </div>
-
-                {/* 📋 Complaints Table (hindi binago ang structure, pero mas clear ang status) */}
-                <Card>
+                {/* 📋 Complaints Table (updated for dark mode) */}
+                <Card className="border-border bg-card text-card-foreground">
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>User</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Date & Time Created</TableHead>
-                                    <TableHead>Date & Time Resolved</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                <TableRow className="border-border">
+                                    <TableHead className="text-foreground">User</TableHead>
+                                    <TableHead className="text-foreground">Type</TableHead>
+                                    <TableHead className="text-foreground">Description</TableHead>
+                                    <TableHead className="text-foreground">Status</TableHead>
+                                    <TableHead className="text-foreground">Date & Time Created</TableHead>
+                                    <TableHead className="text-foreground">Date & Time Resolved</TableHead>
+                                    <TableHead className="text-foreground">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -204,15 +207,17 @@ export default function Index() {
                                     return (
                                         <TableRow
                                             key={complaint.id}
-                                            className={` ${complaint.status === 'pending' ? 'bg-orange-50 font-semibold' : 'bg-emerald-50'} transition-colors duration-200`}
+                                            className={`border-border ${complaint.status === 'pending' ? 'bg-orange-50 dark:bg-orange-950/20' : 'bg-emerald-50 dark:bg-emerald-950/20'} transition-colors duration-200`}
                                         >
-                                            <TableCell>{complaint.user.name}</TableCell>
-                                            <TableCell>{complaint.title}</TableCell>
-                                            <TableCell>{complaint.description}</TableCell>
+                                            <TableCell className="text-foreground">{complaint.user.name}</TableCell>
+                                            <TableCell className="text-foreground">{complaint.title}</TableCell>
+                                            <TableCell className="text-foreground">{complaint.description}</TableCell>
                                             <TableCell>
                                                 <span
                                                     className={`rounded px-2 py-1 text-xs font-semibold text-white ${
-                                                        isResolved ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-orange-500 hover:bg-orange-600'
+                                                        isResolved
+                                                            ? 'bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700'
+                                                            : 'bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700'
                                                     }`}
                                                 >
                                                     {complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1)}
@@ -220,18 +225,18 @@ export default function Index() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium">{created.date}</span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">{created.time}</span>
+                                                    <span className="font-medium text-foreground">{created.date}</span>
+                                                    <span className="text-xs text-muted-foreground">{created.time}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 {resolved ? (
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium">{resolved.date}</span>
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">{resolved.time}</span>
+                                                        <span className="font-medium text-foreground">{resolved.date}</span>
+                                                        <span className="text-xs text-muted-foreground">{resolved.time}</span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400">---</span>
+                                                    <span className="text-muted-foreground">---</span>
                                                 )}
                                             </TableCell>
                                             <TableCell>
@@ -242,12 +247,14 @@ export default function Index() {
                                                             variant="outline"
                                                             onClick={() => markResolved(complaint.id)}
                                                             disabled={processing}
-                                                            className="bg-green-500 text-white hover:bg-green-600"
+                                                            className="bg-green-500 text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
                                                         >
                                                             {processing ? 'Processing...' : 'Mark Resolved'}
                                                         </Button>
                                                     )}
-                                                    {isResolved && <span className="text-sm font-medium text-emerald-600">Resolved</span>}
+                                                    {isResolved && (
+                                                        <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Resolved</span>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -255,7 +262,7 @@ export default function Index() {
                                 })}
                                 {filteredComplaints.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="py-8 text-center text-gray-500">
+                                        <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                                             No complaints found.
                                         </TableCell>
                                     </TableRow>

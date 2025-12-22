@@ -39,7 +39,6 @@ const getSectionForNavItem = (href: string) => {
     return 'System Management';
 };
 
-// Get display info from navItems
 const getDisplayInfoByResource = (resourceName: string) => {
     const navItem = allNavItems.find((item) => item.resource === resourceName);
     return {
@@ -56,7 +55,6 @@ export default function Index({ permissions, roles }: Props) {
     const [newPermission, setNewPermission] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
 
-    // Group permissions by section
     const groupedBySection = () => {
         const sections: Record<string, Record<string, Permission[]>> = {
             'System Management': {},
@@ -200,8 +198,7 @@ export default function Index({ permissions, roles }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manage Permissions" />
 
-            <div className="container mx-auto min-h-screen space-y-6 bg-sky-50 p-6 dark:bg-gray-950">
-                {/* Header */}
+            <div className="container mx-auto min-h-screen space-y-6 p-6 dark:bg-gray-950">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="flex items-center gap-2 text-3xl font-bold text-sky-950 dark:text-white">
@@ -211,7 +208,7 @@ export default function Index({ permissions, roles }: Props) {
                         <p className="mt-1 text-sky-950 dark:text-white">Control which roles have access to features</p>
                     </div>
                     <Button
-                        className="border-1 border-sky-500 bg-gradient-to-r from-sky-200 to-sky-300 text-sky-950 hover:from-sky-300 hover:to-sky-400 hover:text-white dark:from-sky-700 dark:to-sky-900 dark:text-white dark:hover:from-sky-600 dark:hover:to-sky-800"
+                        className="border border-sky-500 bg-linear-to-r from-sky-200 to-sky-300 text-sky-950 hover:from-sky-300 hover:to-sky-400 hover:text-white dark:from-sky-700 dark:to-sky-900 dark:text-white dark:hover:from-sky-600 dark:hover:to-sky-800"
                         onClick={generateFromNavigation}
                         disabled={isGenerating}
                     >
@@ -222,13 +219,11 @@ export default function Index({ permissions, roles }: Props) {
 
                 <Alert className="bg-sky-300 dark:bg-sky-950">
                     <AlertDescription className="text-sky-950 dark:text-white">
-                        💡 <strong>Tip:</strong> Select a role, check the permissions you want to grant, then click <strong>Save</strong>. Permissions
-                        are organized by sections for easier management.
+                        💡 <strong>Tip:</strong> Select a role, check the permissions you want to grant, then click <strong>Save</strong>.
                     </AlertDescription>
                 </Alert>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-                    {/* Roles List */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sky-950 dark:text-white">Roles</CardTitle>
@@ -241,7 +236,7 @@ export default function Index({ permissions, roles }: Props) {
                                     onClick={() => handleRoleChange(role)}
                                     className={`w-full rounded-lg px-4 py-3 text-left transition ${
                                         selectedRole?.id === role.id
-                                            ? 'border-1 border-sky-500 bg-sky-300 text-sky-950 dark:bg-sky-700 dark:text-white'
+                                            ? 'border border-sky-500 bg-sky-300 text-sky-950 dark:bg-sky-700 dark:text-white'
                                             : 'hover:bg-sky-300 hover:text-white dark:hover:bg-sky-700'
                                     }`}
                                 >
@@ -254,7 +249,6 @@ export default function Index({ permissions, roles }: Props) {
                         </CardContent>
                     </Card>
 
-                    {/* Permissions Grid - Grouped by Section */}
                     <Card className="flex h-[80vh] flex-col overflow-hidden lg:col-span-3">
                         <CardHeader>
                             <div className="flex items-center justify-between text-sky-950 dark:text-white">
@@ -265,7 +259,7 @@ export default function Index({ permissions, roles }: Props) {
                                     </CardDescription>
                                 </div>
                                 <Button
-                                    className="border-1 border-sky-500 bg-sky-400 text-sky-950 hover:bg-sky-600 hover:text-white dark:bg-sky-700 dark:text-white dark:hover:bg-sky-600"
+                                    className="border border-sky-500 bg-sky-400 text-sky-950 hover:bg-sky-600 hover:text-white dark:bg-sky-700 dark:text-white dark:hover:bg-sky-600"
                                     onClick={savePermissions}
                                     disabled={!selectedRole}
                                 >
@@ -275,12 +269,9 @@ export default function Index({ permissions, roles }: Props) {
                             </div>
                         </CardHeader>
 
-                        {/*  Scrollable Content */}
                         <CardContent className="flex-1 space-y-8 overflow-y-auto pr-4">
                             {Object.keys(permissions).length === 0 ? (
-                                <div className="py-12 text-center text-muted-foreground">
-                                    No permissions yet. Click "Generate from Navigation" to create them.
-                                </div>
+                                <div className="py-12 text-center text-muted-foreground">No permissions yet. Click "Generate from Navigation".</div>
                             ) : (
                                 Object.entries(sectionedPermissions).map(([section, sectionPerms]) => {
                                     if (Object.keys(sectionPerms).length === 0) return null;
@@ -293,14 +284,13 @@ export default function Index({ permissions, roles }: Props) {
 
                                     return (
                                         <div key={section} className="space-y-4">
-                                            {/* Section Header */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <SectionIcon className="h-6 w-6 text-primary" />
                                                     <h2 className="text-xl font-bold">{section}</h2>
                                                 </div>
                                                 <Button
-                                                    className="border border-sky-400 bg-sky-300 text-sky-950 hover:bg-sky-400 hover:text-white dark:bg-sky-700 dark:text-white dark:hover:bg-sky-800"
+                                                    className="border border-sky-400 bg-sky-400 text-sky-950 hover:bg-sky-400 hover:text-white dark:bg-sky-700 dark:text-white dark:hover:bg-sky-800"
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => toggleSectionPermissions(sectionPerms)}
@@ -309,7 +299,6 @@ export default function Index({ permissions, roles }: Props) {
                                                 </Button>
                                             </div>
 
-                                            {/* Resources */}
                                             <div className="space-y-3 pl-8">
                                                 {Object.entries(sectionPerms).map(([resource, perms]) => {
                                                     const resourcePerms = perms.map((p) => p.name);
@@ -320,7 +309,7 @@ export default function Index({ permissions, roles }: Props) {
                                                     return (
                                                         <div
                                                             key={resource}
-                                                            className="space-y-3 rounded-lg border border-sky-200 bg-gradient-to-l from-sky-100 to-sky-200 p-4 dark:border-sky-700 dark:from-sky-800 dark:to-sky-950"
+                                                            className="space-y-3 rounded-lg border border-sky-200 bg-linear-to-l from-sky-100 to-sky-200 p-4 dark:border-sky-700 dark:from-sky-800 dark:to-sky-950"
                                                         >
                                                             <div className="flex items-center justify-between">
                                                                 <h3 className="flex items-center gap-2 font-semibold text-sky-950 dark:text-white">
@@ -336,6 +325,7 @@ export default function Index({ permissions, roles }: Props) {
                                                                     {allSelected ? 'Deselect All' : 'Select All'}
                                                                 </Button>
                                                             </div>
+
                                                             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                                                                 {perms.map((permission) => {
                                                                     const action = permission.name.split('.').pop() || '';
@@ -384,7 +374,6 @@ export default function Index({ permissions, roles }: Props) {
                     </Card>
                 </div>
 
-                {/* Create Custom Permission */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Create Custom Permission</CardTitle>

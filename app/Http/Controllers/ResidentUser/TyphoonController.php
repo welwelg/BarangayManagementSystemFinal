@@ -47,16 +47,20 @@ class TyphoonController extends Controller
 
                     // If strong winds detected (potential storm)
                     if ($windSpeed > 60) {
+                        $directionDegrees = $data['wind']['deg'] ?? 0;
+                        $path             = $this->generateTyphoonPath($lat, $lon, $directionDegrees, 10); // Generate 10-point path
+
                         $typhoons[] = [
                             'name'          => 'Weather System Detected',
                             'lat'           => $lat,
                             'lon'           => $lon,
                             'windSpeed'     => round($windSpeed, 1),
                             'pressure'      => $data['main']['pressure'] ?? 0,
-                            'direction'     => $this->getWindDirection($data['wind']['deg'] ?? 0),
+                            'direction'     => $this->getWindDirection($directionDegrees),
                             'category'      => $this->categorizeTyphoon($windSpeed),
                             'affectedAreas' => 'Central Philippines',
                             'lastUpdate'    => now()->toISOString(),
+                            'path'          => $path, // Added: Array of [lon, lat] for track animation
                         ];
                     }
                 }
@@ -70,7 +74,7 @@ class TyphoonController extends Controller
 
     public function fetchWeeklyForecast()
     {
-                                        // Get user's coordinates from request
+
         $lat = request('lat', 14.6760); // Default: Quezon City
         $lon = request('lon', 121.0437);
 
@@ -142,6 +146,27 @@ class TyphoonController extends Controller
 
             return [];
         });
+    }
+
+    // Helper: Generate a simple typhoon path (simulated based on direction)
+    private function generateTyphoonPath($startLat, $startLon, $directionDegrees, $numPoints = 10, $stepKm = 50)
+    {
+        $path = [];
+        $lat  = $startLat;
+        $lon  = $startLon;
+
+        // Convert direction to radians
+        $rad = deg2rad($directionDegrees);
+
+        for ($i = 0; $i < $numPoints; $i++) {
+            $path[] = [round($lon, 4), round($lat, 4)]; // [lon, lat] for GeoJSON
+
+                                                                      // Move in direction (rough approximation: 1 degree lat ~ 111 km, lon varies)
+            $lat += ($stepKm / 111) * cos($rad);                      // North-South
+            $lon += ($stepKm / 111) * sin($rad) / cos(deg2rad($lat)); // East-West, adjusted for latitude
+        }
+
+        return $path;
     }
 
     private function getWindDirection($degrees)

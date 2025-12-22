@@ -1,11 +1,10 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Calendar, SquareCheckBig } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 interface AnnouncementCardProps {
@@ -18,29 +17,47 @@ interface AnnouncementCardProps {
     postedDate: string;
 }
 
+interface Announcement {
+    id: number;
+    title: string;
+    message: string;
+    type: string;
+    meeting_date: string | null;
+    created_at: string;
+}
+
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface AnnouncementPagination {
+    data: Announcement[];
+    links: PaginationLink[];
+}
+
 function AnnouncementCard({ id, title, description, category, categoryColor, meetingDate, postedDate }: AnnouncementCardProps) {
     return (
-        <Card className="flex flex-col transition-shadow hover:shadow-lg">
-            <CardContent className="flex-1 p-6">
+        <Card className="flex flex-col border-border bg-card text-card-foreground transition-shadow hover:shadow-lg">
+            {' '}
+            {/* Added dark mode support */}
+            <CardContent className="flex-1 p-4 sm:p-6">
                 <div className="mb-4 h-1 w-12 rounded-full bg-primary" />
-
                 <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
-
-                <h3 className="mb-3 text-lg font-semibold text-card-foreground">{title}</h3>
-
+                <h3 className="mb-3 text-base font-semibold text-card-foreground sm:text-lg">{title}</h3>
                 <Badge className={cn('mb-4', categoryColor)}>{category}</Badge>
-
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
                     <span>Meeting Date: {meetingDate}</span>
                 </div>
-
                 <p className="mt-2 text-xs text-muted-foreground">Posted: {postedDate}</p>
             </CardContent>
-
-            <CardFooter className="flex gap-2 border-t border-border p-4">
-                <Link href={route('announcements.edit', id)}>
-                    <Button variant="ghost" size="sm" className="flex-1">
+            <CardFooter className="flex flex-col gap-2 border-t border-border bg-card p-4 sm:flex-row sm:gap-2">
+                {' '}
+                {/* Added bg-card for footer */}
+                <Link href={route('announcements.edit', id)} className="flex-1">
+                    <Button variant="ghost" size="sm" className="w-full">
                         Edit
                     </Button>
                 </Link>
@@ -48,15 +65,14 @@ function AnnouncementCard({ id, title, description, category, categoryColor, mee
                     href={route('announcements.destroy', id)}
                     method="delete"
                     as="button"
+                    className="inline-flex h-9 w-full flex-1 items-center justify-center rounded-md bg-destructive px-3 text-sm font-medium whitespace-nowrap text-destructive-foreground ring-offset-background transition-colors hover:bg-destructive/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" // Destructive styles (already dark mode compatible)
                     onClick={(e) => {
                         if (!confirm('Are you sure you want to delete this?')) {
                             e.preventDefault();
                         }
                     }}
                 >
-                    <Button variant="destructive" size="sm" className="flex-1">
-                        Delete
-                    </Button>
+                    Delete
                 </Link>
             </CardFooter>
         </Card>
@@ -66,8 +82,7 @@ function AnnouncementCard({ id, title, description, category, categoryColor, mee
 // ------------------- Index Page -------------------
 const breadcrumbs = [{ title: 'Announcement', href: '/admin/announcements' }];
 
-export default function Index({ announcements = [] }) {
-    const { flash } = usePage().props;
+export default function Index({ announcements }: { announcements: AnnouncementPagination }) {
     const [dateFilter, setDateFilter] = useState('all');
 
     // Available Filters
@@ -109,27 +124,19 @@ export default function Index({ announcements = [] }) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Admin Announcements" />
 
-            {/* Success Message */}
-            <div className="m-4">
-                {flash.message && (
-                    <Alert>
-                        <SquareCheckBig />
-                        <AlertTitle>Notification!</AlertTitle>
-                        <AlertDescription>{flash.message}</AlertDescription>
-                    </Alert>
-                )}
-            </div>
-
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Announcement</h1>
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-background p-4 text-foreground">
+                {' '}
+                {/* Added bg-background and text-foreground */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h1 className="text-xl font-bold text-foreground sm:text-2xl">Announcement</h1> {/* Added text-foreground */}
                     <Link href={route('announcements.create')}>
-                        <Button>Add Announcement</Button>
+                        <Button className="w-full sm:w-auto">Add Announcement</Button>
                     </Link>
                 </div>
-
-                <Card>
-                    <CardContent className="overflow-x-auto p-6">
+                <Card className="border-border bg-card text-card-foreground">
+                    {' '}
+                    {/* Added dark mode support */}
+                    <CardContent className="overflow-x-auto p-4 sm:p-6">
                         {/* Date Filter */}
                         <div className="mb-4 flex flex-wrap items-center gap-2">
                             {dateFilters.map((filter) => (
@@ -138,13 +145,13 @@ export default function Index({ announcements = [] }) {
                                     size="sm"
                                     variant={dateFilter === filter.value ? 'default' : 'outline'}
                                     onClick={() => setDateFilter(filter.value)}
+                                    className="text-xs sm:text-sm"
                                 >
                                     {filter.label}
                                 </Button>
                             ))}
                         </div>
-
-                        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
                             {filteredAnnouncements.length > 0 ? (
                                 filteredAnnouncements.map((a) => (
                                     <AnnouncementCard
@@ -153,7 +160,7 @@ export default function Index({ announcements = [] }) {
                                         title={a.title}
                                         description={a.message}
                                         category={a.type}
-                                        categoryColor="bg-blue-600 text-white dark:bg-blue-900"
+                                        categoryColor="bg-blue-600 text-white dark:bg-blue-900 dark:text-white" // Enhanced badge for dark mode
                                         meetingDate={
                                             a.meeting_date
                                                 ? new Date(a.meeting_date).toLocaleDateString('en-US', {
@@ -173,19 +180,28 @@ export default function Index({ announcements = [] }) {
                                     />
                                 ))
                             ) : (
-                                <p className="text-center text-gray-500">No announcements found for the selected date.</p>
+                                <p className="col-span-full text-center text-sm text-muted-foreground sm:text-base">
+                                    {' '}
+                                    {/* Changed to text-muted-foreground */}
+                                    No announcements found for the selected date.
+                                </p>
                             )}
                         </div>
                     </CardContent>
-
                     {/* Pagination */}
-                    <CardFooter className="mt-6 flex justify-center">
-                        <div className="flex gap-2">
+                    <CardFooter className="mt-6 flex justify-center bg-card">
+                        {' '}
+                        {/* Added bg-card */}
+                        <div className="flex flex-wrap justify-center gap-2">
                             {announcements.links.map((link, i) => (
                                 <Link
                                     key={i}
                                     href={link.url || '#'}
-                                    className={`rounded px-3 py-1 ${link.active ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                                    className={`rounded px-3 py-1 text-sm transition-colors ${
+                                        link.active
+                                            ? 'bg-blue-600 text-white dark:bg-blue-700 dark:text-white'
+                                            : 'bg-muted text-muted-foreground hover:bg-muted/80 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700' // Added dark mode for inactive
+                                    }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
                             ))}

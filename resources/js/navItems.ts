@@ -2,6 +2,7 @@ import { type NavItem } from '@/types';
 import { CloudRainWind, FolderKanban, LayoutDashboard, Megaphone, MessageSquareWarning, Notebook, TriangleAlert, Users } from 'lucide-react';
 import { AiFillMessage } from 'react-icons/ai';
 import { LuShieldEllipsis } from 'react-icons/lu';
+import { LuLogs } from 'react-icons/lu';
 
 export const allNavItems: NavItem[] = [
     // System Management (SuperAdmin/Admin items)
@@ -88,6 +89,14 @@ export const allNavItems: NavItem[] = [
         actions: ['view', 'create', 'edit', 'delete'],
         resource: 'disaster-reports',
     },
+    {
+            title: 'Blotter',
+            href: '/admin/blotter',
+            icon: LuLogs,
+            roles: ['admin', 'superadmin'],
+            actions: ['view', 'create', 'edit', 'delete'],
+            resource: 'blotter',
+        },
 
     // Resident User items
     {
@@ -138,4 +147,13 @@ export const allNavItems: NavItem[] = [
         actions: ['view', 'create', 'edit', 'delete'],
         resource: 'residentuser-disaster-reports',
     },
+    {
+            title: 'Blotter',
+            href: '/residentuser/blotter',
+            icon: LuLogs,
+            roles: ['user'],
+            actions: ['view', 'create', 'edit', 'delete'],
+            resource: 'residentuser-blotter',
+    },
 ];
+

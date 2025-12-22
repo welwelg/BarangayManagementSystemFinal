@@ -149,7 +149,7 @@ export default function Index({ roles }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles" />
 
-            <div className="min-h-screen bg-sky-50 dark:bg-gray-950">
+            <div className="min-h-screen dark:bg-gray-950">
                 <div className="container mx-auto space-y-4 p-4 md:p-6">
                     {/* Header */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -165,7 +165,7 @@ export default function Index({ roles }: IndexProps) {
 
                         <Button
                             onClick={() => setOpen(true)}
-                            className="w-full bg-sky-500 text-white hover:bg-sky-600 sm:w-auto dark:bg-sky-900 dark:hover:bg-sky-700"
+                            className="w-full bg-sky-400 text-sky-950 hover:bg-sky-600 hover:text-white sm:w-auto dark:bg-sky-900 dark:text-sky-50 dark:hover:bg-sky-700"
                         >
                             <SquarePlus className="mr-2 h-4 w-4" />
                             Add Role
@@ -179,7 +179,7 @@ export default function Index({ roles }: IndexProps) {
                                 <TableCaption className="text-base font-medium">A list of Roles</TableCaption>
 
                                 <TableHeader>
-                                    <TableRow className="bg-sky-200 dark:bg-sky-800">
+                                    <TableRow className="bg-sky-400 dark:bg-sky-800">
                                         <TableHead className="w-[60px] font-bold">#</TableHead>
                                         <TableHead className="font-bold">Name</TableHead>
                                         <TableHead className="font-bold">Permissions</TableHead>

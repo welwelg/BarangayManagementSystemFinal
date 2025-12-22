@@ -3,6 +3,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Broadcast;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        Broadcast::routes();
         // Global share for Inertia (auth user + roles + permissions)
         Inertia::share([
             'auth' => fn() => auth()->check()
@@ -26,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
                 'id'          => auth()->id(),
                 'name'        => auth()->user()->name,
                 'email'       => auth()->user()->email,
-                'roles'       => auth()->user()->getRoleNames(), // roles from Spatie
+                'roles'       => auth()->user()->getRoleNames(),
                 'permissions' => auth()->user()->getAllPermissions()->pluck('name'),
             ]
             : null,

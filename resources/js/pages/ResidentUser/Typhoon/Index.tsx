@@ -3,26 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Calendar, CloudRainWind, Droplets, MapPin, Wind } from 'lucide-react';
+import { Calendar, CloudRainWind, Droplets, MapPin, Wind, Menu, X } from 'lucide-react';
+import proj4 from 'proj4';
 import { useCallback, useEffect, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
-
-const typhoonIcon = new L.Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-});
-
-const userLocationIcon = new L.Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    className: 'user-location-marker',
-});
 
 interface Typhoon {
     name: string;
@@ -34,6 +17,7 @@ interface Typhoon {
     category: string;
     affectedAreas: string;
     lastUpdate: string;
+    path?: [number, number][];
 }
 
 interface DailyForecast {
@@ -54,15 +38,21 @@ interface UserLocation {
     city: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Typhoon Monitor', href: '/residentuset/typhoon-monitoring' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Typhoon Monitor', href: '/residentuser/typhoon-monitoring' }];
 
-function RecenterMap({ position }: { position: [number, number] }) {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(position, 11);
-    }, [position, map]);
-    return null;
-}
+const projection = proj4('EPSG:4326', 'EPSG:3857');
+
+const latLonToPixel = (lat: number, lon: number, mapCenter: [number, number], zoom: number, mapWidth: number = 800, mapHeight: number = 600) => {
+    const [centerX, centerY] = projection.forward(mapCenter);
+    const [x, y] = projection.forward([lon, lat]);
+    const scale = (Math.pow(2, zoom) * 256) / (2 * Math.PI * 6378137);
+    const pixelX = (x - centerX) * scale + mapWidth / 2;
+    const pixelY = (centerY - y) * scale + mapHeight / 2;
+    return {
+        left: `${(pixelX / mapWidth) * 100}%`,
+        top: `${(pixelY / mapHeight) * 100}%`,
+    };
+};
 
 export default function Index() {
     const [typhoons, setTyphoons] = useState<Typhoon[]>([]);
@@ -70,6 +60,7 @@ export default function Index() {
     const [loading, setLoading] = useState(false);
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [locationError, setLocationError] = useState<string>('');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const getUserLocation = () => {
         if ('geolocation' in navigator) {
@@ -80,7 +71,9 @@ export default function Index() {
 
                     try {
                         const response = await fetch(
-                            `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY || ''}`,
+                            `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${
+                                import.meta.env.VITE_OPENWEATHER_API_KEY || ''
+                            }`,
                         );
                         const data = await response.json();
                         const city = data[0]?.name || 'Your Location';
@@ -117,8 +110,6 @@ export default function Index() {
                 const forecastData = await forecastRes.json();
                 setForecast(forecastData);
             }
-        } catch {
-            // silently fail
         } finally {
             setLoading(false);
         }
@@ -136,47 +127,80 @@ export default function Index() {
         }
     }, [userLocation, fetchData]);
 
-    const mapCenter: [number, number] = userLocation ? [userLocation.lat, userLocation.lon] : [12.8797, 121.774];
+    const mapCenter: [number, number] = [10.833, 126.65];
+    const zoom = 5;
+    const mapWidth = 800;
+    const mapHeight = 600;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Typhoon Monitor" />
-            <div className="flex h-full flex-1 gap-4 overflow-x-auto rounded-xl p-4">
-                {/* Sidebar */}
-                <div className="w-80 overflow-y-auto bg-white p-4 shadow-lg dark:bg-gray-900">
-                    <h2 className="mb-4 flex items-center text-xl font-bold">
-                        <CloudRainWind className="mr-2" /> Typhoon Monitoring
-                    </h2>
+
+            <div className="flex h-full flex-1 flex-col gap-4 p-2 sm:p-4 md:flex-row">
+                {/* Mobile Toggle Button */}
+                <Button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg md:hidden"
+                    size="icon"
+                >
+                    {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </Button>
+
+                {/* SIDEBAR */}
+                <div
+                    className={`
+                        fixed inset-y-0 left-0 z-40 w-full transform overflow-y-auto bg-white p-4 shadow-lg transition-transform duration-300 ease-in-out dark:bg-gray-900
+                        sm:w-96
+                        md:static md:w-80 md:translate-x-0
+                        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                    `}
+                >
+                    <div className="mb-4 flex items-center justify-between md:block">
+                        <h2 className="flex items-center text-lg font-bold sm:text-xl">
+                            <CloudRainWind className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Typhoon Monitoring
+                        </h2>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSidebarOpen(false)}
+                            className="md:hidden"
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
+                    </div>
 
                     {userLocation && (
                         <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                             <div className="flex items-center gap-2 text-sm">
-                                <MapPin className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium">{userLocation.city}</span>
+                                <MapPin className="h-4 w-4 flex-shrink-0 text-blue-600" />
+                                <span className="truncate font-medium">{userLocation.city}</span>
                             </div>
                         </div>
                     )}
 
                     {locationError && (
-                        <div className="mb-4 rounded-lg bg-yellow-50 p-3 text-xs text-yellow-800 dark:bg-yellow-900/20">{locationError}</div>
+                        <div className="mb-4 rounded-lg bg-yellow-50 p-3 text-xs text-yellow-800 dark:bg-yellow-900/20">
+                            {locationError}
+                        </div>
                     )}
 
-                    <Button onClick={fetchData} disabled={loading} className="mb-4 w-full">
+                    <Button onClick={fetchData} disabled={loading} className="mb-4 w-full text-sm sm:text-base">
                         {loading ? 'Refreshing...' : 'Refresh Data'}
                     </Button>
 
-                    {/* Active Typhoons */}
+                    {/* ACTIVE TYPHOONS */}
                     <div className="mb-6">
-                        <h3 className="mb-3 text-sm font-semibold text-gray-600 uppercase">Active Typhoons</h3>
+                        <h3 className="mb-3 text-xs font-semibold uppercase text-gray-600 sm:text-sm">Active Typhoons</h3>
+
                         {typhoons.length === 0 ? (
                             <p className="text-sm text-gray-500">No active typhoons detected.</p>
                         ) : (
                             typhoons.map((typhoon, index) => (
                                 <Card key={index} className="mb-4">
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-base">{typhoon.name}</CardTitle>
+                                        <CardTitle className="text-sm sm:text-base">{typhoon.name}</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-1 text-sm">
+                                    <CardContent className="space-y-1 text-xs sm:text-sm">
                                         <p>
                                             <strong>Category:</strong> {typhoon.category}
                                         </p>
@@ -201,31 +225,36 @@ export default function Index() {
                         )}
                     </div>
 
-                    {/* 7-Day Forecast */}
+                    {/* FORECAST */}
                     <div>
-                        <h3 className="mb-3 flex items-center text-sm font-semibold text-gray-600 uppercase">
+                        <h3 className="mb-3 flex items-center text-xs font-semibold uppercase text-gray-600 sm:text-sm">
                             <Calendar className="mr-2 h-4 w-4" /> 7-Day Forecast
                         </h3>
+
                         {forecast.length === 0 ? (
                             <p className="text-sm text-gray-500">Loading forecast...</p>
                         ) : (
                             <div className="space-y-2">
                                 {forecast.map((day, index) => (
-                                    <Card key={index} className="p-3">
+                                    <Card key={index} className="p-2 sm:p-3">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-3">
                                                 <img
                                                     src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
                                                     alt={day.description}
-                                                    className="h-10 w-10"
+                                                    className="h-8 w-8 sm:h-10 sm:w-10"
                                                 />
                                                 <div>
-                                                    <p className="text-sm font-medium">{index === 0 ? 'Today' : day.date}</p>
-                                                    <p className="text-xs text-gray-600 capitalize dark:text-gray-400">{day.description}</p>
+                                                    <p className="text-xs font-medium sm:text-sm">
+                                                        {index === 0 ? 'Today' : day.date}
+                                                    </p>
+                                                    <p className="text-xs capitalize text-gray-600 dark:text-gray-400">
+                                                        {day.description}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-lg font-bold">{day.temp}°C</p>
+                                                <p className="text-base font-bold sm:text-lg">{day.temp}°C</p>
                                                 <p className="text-xs text-gray-500">
                                                     {day.tempMin}° / {day.tempMax}°
                                                 </p>
@@ -247,37 +276,67 @@ export default function Index() {
                     </div>
                 </div>
 
-                {/* Map */}
-                <div className="h-full flex-1">
-                    <MapContainer center={mapCenter} zoom={6} className="h-full w-full rounded-lg">
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        {userLocation && <RecenterMap position={[userLocation.lat, userLocation.lon]} />}
-                        {userLocation && (
-                            <Marker position={[userLocation.lat, userLocation.lon]} icon={userLocationIcon}>
-                                <Popup>
-                                    <strong>📍 {userLocation.city}</strong>
-                                    <br />
-                                    Your Current Location
-                                </Popup>
-                            </Marker>
-                        )}
-                        {typhoons.map((typhoon, index) => (
-                            <Marker key={index} position={[typhoon.lat, typhoon.lon]} icon={typhoonIcon}>
-                                <Popup>
-                                    <strong>{typhoon.name}</strong>
-                                    <br />
-                                    Wind: {typhoon.windSpeed} km/h
-                                    <br />
-                                    Pressure: {typhoon.pressure} hPa
-                                    <br />
-                                    Direction: {typhoon.direction}
-                                </Popup>
-                            </Marker>
-                        ))}
-                    </MapContainer>
+                {/* Overlay for mobile when sidebar is open */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 z-30 bg-black/50 md:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                {/* MAP AREA – WINDY EMBED */}
+                <div className="relative h-[400px] flex-1 sm:h-[500px] md:h-full">
+                    {/* SVG for Typhoon Paths */}
+                    <svg className="pointer-events-none absolute inset-0 z-5">
+                        {typhoons.map((typhoon, index) => {
+                            if (!typhoon.path || typhoon.path.length === 0) return null;
+
+                            const pathCoords = typhoon.path
+                                .map(([lon, lat]) => {
+                                    const pixel = latLonToPixel(lat, lon, mapCenter, zoom, mapWidth, mapHeight);
+
+                                    const x = (parseFloat(pixel.left) / 100) * mapWidth;
+                                    const y = (parseFloat(pixel.top) / 100) * mapHeight;
+                                    return `${x},${y}`;
+                                })
+                                .join(' L ');
+                            return <path key={index} d={`M ${pathCoords}`} />;
+                        })}
+                    </svg>
+
+                    {/* Windy Iframe */}
+                    <iframe
+                        src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=5&overlay=wind&product=ecmwf&level=surface&lat=10.833&lon=126.65&detailLat=14.675711181847326&detailLon=121.23046830296518&detail=true&pressure=true"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        className="rounded-lg"
+                        title="Windy Weather Map"
+                        allow="geolocation"
+                    ></iframe>
+
+                    {/* OVERLAY – USER LOCATION */}
+                    {userLocation && (
+                        <div
+                            className="pointer-events-none absolute z-10 animate-pulse text-xl sm:text-2xl"
+                            style={latLonToPixel(userLocation.lat, userLocation.lon, mapCenter, zoom, mapWidth, mapHeight)}
+                            title={`📍 ${userLocation.city} - Your Current Location`}
+                        >
+                            📍
+                        </div>
+                    )}
+
+                    {/* OVERLAY – TYPHOONS */}
+                    {typhoons.map((typhoon, index) => (
+                        <div
+                            key={index}
+                            className="pointer-events-none absolute z-10 animate-spin text-xl sm:text-2xl"
+                            style={latLonToPixel(typhoon.lat, typhoon.lon, mapCenter, zoom, mapWidth, mapHeight)}
+                            title={`${typhoon.name} - Wind: ${typhoon.windSpeed} km/h, Direction: ${typhoon.direction}`}
+                        >
+                            🌪️
+                        </div>
+                    ))}
                 </div>
             </div>
         </AppLayout>

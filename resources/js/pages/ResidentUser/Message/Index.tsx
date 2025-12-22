@@ -12,8 +12,9 @@ import { type BreadcrumbItem } from '@/types';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { Inbox, MoreVertical, Search, Send } from 'lucide-react';
+import { ArrowLeft, Inbox, MoreVertical, Search, Send } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Messages', href: '/residentuser/message' }];
 
 interface Message {
@@ -75,8 +76,9 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [messageText, setMessageText] = useState('');
-
     const [isSending, setIsSending] = useState(false);
+    const [showMobileChat, setShowMobileChat] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { flash } = usePage<PageProps>().props;
     const markedAsReadRef = useRef(new Set<number>());
@@ -86,9 +88,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         otherUserId: selectedConversation?.userId ?? null,
     });
 
-    // Typing indicator is handled via isTyping state from useTypingIndicator
-
-    // Handle flash messages
     useEffect(() => {
         if (flash?.message) toast.success(flash.message);
         if (flash?.error) toast.error(flash.error);
@@ -96,12 +95,10 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
 
     useEffect(() => setLocalUnreadCount(unreadCount), [unreadCount]);
 
-    // Auto scroll to bottom when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [selectedConversation?.messages]);
 
-    // Real-time message listener
     useEffect(() => {
         if (!window.Echo) return;
 
@@ -148,7 +145,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         };
     }, [auth.user.id]);
 
-    // Group messages into conversations (threads)
     const conversations = useMemo(() => {
         const convMap = new Map<number, Conversation>();
 
@@ -208,7 +204,6 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         );
     };
 
-    // Auto mark messages as read when conversation is opened
     useEffect(() => {
         if (selectedConversation) {
             selectedConversation.messages.forEach((msg) => {
@@ -218,6 +213,16 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
             });
         }
     }, [selectedConversation, auth.user.id]);
+
+    const handleSelectConversation = (conv: Conversation) => {
+        setSelectedConversation(conv);
+        setShowMobileChat(true);
+    };
+
+    const handleBackToList = () => {
+        setShowMobileChat(false);
+        setSelectedConversation(null);
+    };
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
@@ -283,6 +288,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
             onSuccess: () => {
                 if (selectedConversation && selectedConversation.messages.length === 1) {
                     setSelectedConversation(null);
+                    setShowMobileChat(false);
                 }
             },
         });
@@ -301,16 +307,16 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Messages" />
 
-            <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-lg border bg-card">
+            <div className="flex h-[calc(100vh-120px)] overflow-hidden rounded-lg border bg-card sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)]">
                 {/* Conversations List */}
-                <div className="flex w-80 flex-col border-r">
-                    <div className="space-y-3 border-b p-4">
+                <div className={`flex w-full flex-col border-r md:w-80 lg:w-96 ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
+                    <div className="space-y-3 border-b p-3 sm:p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-lg font-semibold">My Messages</h2>
+                                <h2 className="text-base font-semibold sm:text-lg">My Messages</h2>
                                 <p className="text-xs text-muted-foreground">{conversations.length} conversations</p>
                             </div>
-                            {localUnreadCount > 0 && <Badge variant="destructive">{localUnreadCount}</Badge>}
+                            {localUnreadCount > 0 && <Badge variant="destructive" className="text-xs">{localUnreadCount}</Badge>}
                         </div>
 
                         <Link href={route('residentuser.message.create')} className="block">
@@ -324,7 +330,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search conversations..."
-                                className="pl-9"
+                                className="pl-9 text-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -345,34 +351,34 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                 return (
                                     <button
                                         key={conv.userId}
-                                        onClick={() => setSelectedConversation(conv)}
-                                        className={`flex w-full items-start gap-3 border-b p-3 text-left transition-colors hover:bg-accent ${
+                                        onClick={() => handleSelectConversation(conv)}
+                                        className={`flex w-full items-start gap-2 border-b p-3 text-left transition-colors hover:bg-accent sm:gap-3 ${
                                             isSelected ? 'bg-accent' : ''
                                         } ${conv.unreadCount > 0 ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''}`}
                                     >
-                                        <Avatar className="h-10 w-10">
+                                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                                             <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                                                 {getInitials(conv.userName)}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1 overflow-hidden">
                                             <div className="flex items-start justify-between gap-2">
-                                                <span className="max-w-[60%] truncate text-sm font-semibold sm:max-w-[70%]">
+                                                <span className="max-w-[60%] truncate text-xs font-semibold sm:max-w-[70%] sm:text-sm">
                                                     {conv.userName}
                                                     {conv.lastMessage.sender_type === 'admin' && (
-                                                        <Badge variant="outline" className="ml-2 text-[10px]">
+                                                        <Badge variant="outline" className="ml-1 text-[9px] sm:ml-2 sm:text-[10px]">
                                                             Admin
                                                         </Badge>
                                                     )}
                                                 </span>
 
                                                 <div className="flex flex-shrink-0 flex-col items-end text-right leading-tight">
-                                                    <span className="text-[11px] text-muted-foreground sm:text-xs">
+                                                    <span className="text-[10px] text-muted-foreground sm:text-[11px]">
                                                         {format(new Date(conv.lastMessage.created_at), 'MMM d')}
                                                     </span>
 
                                                     {conv.unreadCount > 0 && (
-                                                        <span className="mt-0.5 flex h-4 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white sm:h-5 sm:min-w-[1.5rem] sm:text-[11px]">
+                                                        <span className="mt-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white sm:h-5 sm:min-w-[1.25rem] sm:text-[10px]">
                                                             {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
                                                         </span>
                                                     )}
@@ -380,7 +386,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                             </div>
 
                                             <div className="mt-0.5 flex items-center gap-2">
-                                                <p className="flex-1 truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                                                <p className="flex-1 truncate text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
                                                     {lastMsgIsSent && <span className="font-medium">You: </span>}
                                                     {conv.lastMessage.body}
                                                 </p>
@@ -394,24 +400,32 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                 </div>
 
                 {/* Chat Thread */}
-                <div className="flex flex-1 flex-col">
+                <div className={`flex flex-1 flex-col ${showMobileChat ? 'flex' : 'hidden md:flex'}`}>
                     {selectedConversation ? (
                         <>
                             {/* Chat Header */}
-                            <div className="flex items-center gap-3 border-b bg-background p-4">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarFallback className="bg-primary text-primary-foreground">
+                            <div className="flex items-center gap-2 border-b bg-background p-3 sm:gap-3 sm:p-4">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleBackToList}
+                                    className="md:hidden"
+                                >
+                                    <ArrowLeft className="h-5 w-5" />
+                                </Button>
+                                <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                                    <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                                         {getInitials(selectedConversation.userName)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
-                                    <h3 className="font-semibold">{selectedConversation.userName}</h3>
-                                    <p className="text-xs text-muted-foreground">{selectedConversation.userEmail}</p>
+                                    <h3 className="text-sm font-semibold sm:text-base">{selectedConversation.userName}</h3>
+                                    <p className="text-[10px] text-muted-foreground sm:text-xs">{selectedConversation.userEmail}</p>
                                 </div>
                             </div>
 
                             {/* Messages Area */}
-                            <div className="flex-1 space-y-4 overflow-y-auto p-4">
+                            <div className="flex-1 space-y-3 overflow-y-auto p-3 sm:space-y-4 sm:p-4">
                                 {selectedConversation.messages
                                     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
                                     .map((message) => {
@@ -419,27 +433,27 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
 
                                         return (
                                             <div key={message.id} className={`flex gap-2 ${isSent ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                <Avatar className="h-8 w-8 flex-shrink-0">
+                                                <Avatar className="h-7 w-7 flex-shrink-0 sm:h-8 sm:w-8">
                                                     <AvatarFallback
-                                                        className={isSent ? 'bg-primary text-xs text-primary-foreground' : 'bg-muted text-xs'}
+                                                        className={isSent ? 'bg-primary text-[10px] text-primary-foreground sm:text-xs' : 'bg-muted text-[10px] sm:text-xs'}
                                                     >
                                                         {getInitials(isSent ? auth.user.name : selectedConversation.userName)}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <div className={`flex max-w-[70%] flex-col gap-1 ${isSent ? 'items-end' : 'items-start'}`}>
+                                                <div className={`flex max-w-[85%] flex-col gap-1 sm:max-w-[70%] ${isSent ? 'items-end' : 'items-start'}`}>
                                                     <div
                                                         className={`group relative rounded-2xl px-3 py-2 ${
                                                             isSent ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                                         }`}
                                                     >
-                                                        <p className="text-sm whitespace-pre-wrap">{message.body}</p>
+                                                        <p className="whitespace-pre-wrap text-xs sm:text-sm">{message.body}</p>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className={`absolute top-1/2 h-6 w-6 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 ${
-                                                                        isSent ? '-left-8' : '-right-8'
+                                                                        isSent ? '-left-7 sm:-left-8' : '-right-7 sm:-right-8'
                                                                     }`}
                                                                 >
                                                                     <MoreVertical className="h-3 w-3" />
@@ -456,7 +470,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
-                                                    <span className="px-2 text-xs text-muted-foreground">
+                                                    <span className="px-2 text-[10px] text-muted-foreground sm:text-xs">
                                                         {format(new Date(message.created_at), 'h:mm a')}
                                                     </span>
                                                 </div>
@@ -465,13 +479,13 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                     })}
 
                                 <div ref={messagesEndRef} />
-                                {isTyping && <div className="mt-1 text-sm text-gray-500 italic">Typing...</div>}
+                                {isTyping && <div className="mt-1 text-xs italic text-gray-500 sm:text-sm">Typing...</div>}
                             </div>
 
                             {/* Message Input */}
-                            <div className="border-t bg-background p-4">
+                            <div className="border-t bg-background p-2 sm:p-4">
                                 <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-                                    <div className="flex flex-1 items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
+                                    <div className="flex flex-1 items-center gap-2 rounded-full border bg-muted/50 px-3 py-2 sm:px-4">
                                         <Textarea
                                             value={messageText}
                                             onChange={(e) => {
@@ -479,7 +493,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                                 setMessageText(e.target.value);
                                             }}
                                             placeholder="Type a message..."
-                                            className="min-h-0 flex-1 resize-none border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
+                                            className="min-h-0 flex-1 resize-none border-0 bg-transparent p-0 text-xs focus-visible:ring-0 sm:text-sm"
                                             rows={1}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -492,7 +506,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                     <Button
                                         type="submit"
                                         size="icon"
-                                        className="flex h-10 w-10 items-center justify-center rounded-full"
+                                        className="flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10"
                                         disabled={!messageText.trim() || isSending}
                                     >
                                         {isSending ? <Spinner className="h-4 w-4" /> : <Send className="h-4 w-4" />}
@@ -501,11 +515,11 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                             </div>
                         </>
                     ) : (
-                        <div className="flex flex-1 flex-col items-center justify-center gap-3">
-                            <Inbox className="h-16 w-16 text-muted-foreground" />
+                        <div className="hidden flex-1 flex-col items-center justify-center gap-3 md:flex">
+                            <Inbox className="h-12 w-12 text-muted-foreground sm:h-16 sm:w-16" />
                             <div className="text-center">
-                                <h3 className="text-lg font-semibold">Your Messages</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">Select a conversation to start chatting with admin</p>
+                                <h3 className="text-base font-semibold sm:text-lg">Your Messages</h3>
+                                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Select a conversation to start chatting with admin</p>
                             </div>
                         </div>
                     )}
