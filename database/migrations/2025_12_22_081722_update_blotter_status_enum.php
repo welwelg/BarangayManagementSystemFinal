@@ -12,9 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('blotters', function (Blueprint $table) {
-            DB::statement("ALTER TABLE blotters MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'settled') NOT NULL DEFAULT 'pending'");
-        });
+        if (DB::getDriverName() !== 'sqlite') {
+        DB::statement("ALTER TABLE blotters MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'settled') NOT NULL DEFAULT 'pending'");
+    }
     }
 
     /**
