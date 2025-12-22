@@ -5,38 +5,60 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { toast } from 'sonner';
-import { UserCheck, FileText, Send, X } from 'lucide-react';
-import { Spinner } from '@/components/ui/spinner';
+import { UserCheck, Save, X, Edit3 } from 'lucide-react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Blotter', href: '/user/blotter' },
-    { title: 'Create Report', href: '/user/blotter/create' },
-];
+interface BlotterData {
+    id: number;
+    type: string;
+    description: string;
+    respondent_name: string | null;
+    respondent_user_id: number | null;
+    status: string;
+}
 
 interface User {
     id: number;
     name: string;
 }
 
-export default function Create({ users }: { users: User[] }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        type: '',
-        respondent_user_id: '',
-        respondent_name: '',
-        description: '',
+interface EditProps {
+    blotter: BlotterData;
+    users: User[];
+}
+
+export default function Edit({ blotter, users }: EditProps) {
+
+    const { data, setData, put, processing, errors } = useForm({
+        type: blotter.type || '',
+        respondent_user_id: blotter.respondent_user_id ? blotter.respondent_user_id.toString() : '',
+        respondent_name: blotter.respondent_name || '',
+        description: blotter.description || '',
     });
+
+    const isEditable = blotter.status === 'pending';
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Blotter', href: '/user/blotter' },
+        { title: 'Edit Report', href: `/user/blotter/${blotter.id}/edit` },
+    ];
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('residentuser.blotter.store'), {
+
+        if (!isEditable) {
+            toast.error("This report cannot be edited because it has already been processed.");
+            return;
+        }
+
+        put(route('residentuser.blotter.update', blotter.id), {
             onSuccess: () => {
-                reset();
-                toast.success('Blotter report submitted successfully.');
+                toast.success('Blotter report updated successfully.');
             },
             onError: () => {
                 toast.error('Please check the form for errors.');
@@ -45,6 +67,8 @@ export default function Create({ users }: { users: User[] }) {
     };
 
     const handleRespondentSelect = (value: string) => {
+        if (!isEditable) return;
+
         if (value === 'manual') {
             setData(data => ({ ...data, respondent_user_id: '', respondent_name: '' }));
         } else {
@@ -61,28 +85,30 @@ export default function Create({ users }: { users: User[] }) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="File New Blotter" />
+            <Head title={`Edit Blotter #${blotter.id}`} />
 
             <div className="flex min-h-screen w-full items-start justify-center bg-muted/40 p-4 sm:p-8 dark:bg-background">
-                <div className="w-full max-w-2xl space-y-6">
+                <div className="w-full max-w-3xl space-y-6">
 
-                    {/* Header Section */}
+                    {/* Header */}
                     <div className="flex flex-col gap-2 text-center sm:text-left">
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">File a Complaint</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Complaint</h1>
                         <p className="text-muted-foreground">
-                            Submit a formal incident report to the Barangay for review and scheduling.
+                            Update the details of your filed report.
                         </p>
                     </div>
 
                     <Card className="border shadow-sm dark:bg-card">
-                        <CardHeader className="bg-muted/20 pb-4">
+                        <CardHeader className="bg-muted/20 pb-4 border-b">
                             <div className="flex items-center gap-3">
-                                <div className="rounded-full bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                    <FileText className="h-5 w-5" />
+                                <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                                    <Edit3 className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg">Incident Details</CardTitle>
-                                    <CardDescription>Please provide accurate information.</CardDescription>
+                                    <CardTitle className="text-lg">Report Details</CardTitle>
+                                    <CardDescription>
+                                        Case #{blotter.id} • {isEditable ? <span className="text-green-600 font-medium">Editable</span> : <span className="text-red-500 font-medium">Locked (Processed)</span>}
+                                    </CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -92,13 +118,14 @@ export default function Create({ users }: { users: User[] }) {
 
                                 {/* Incident Type */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="type">Nature of Incident <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="type">Nature of Incident</Label>
                                     <Select
                                         onValueChange={(value) => setData('type', value)}
-                                        defaultValue={data.type}
+                                        value={data.type}
+                                        disabled={!isEditable}
                                     >
                                         <SelectTrigger className="h-11 bg-background">
-                                            <SelectValue placeholder="Select incident type" />
+                                            <SelectValue placeholder="Select type of incident" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Complaint">Complaint</SelectItem>
@@ -119,17 +146,18 @@ export default function Create({ users }: { users: User[] }) {
                                     </div>
 
                                     <div className="space-y-4">
-                                        {/* Dropdown */}
                                         <div className="space-y-2">
-                                            <Label className="text-xs text-muted-foreground uppercase">Search Resident (Optional)</Label>
-                                            <Select onValueChange={handleRespondentSelect}>
+                                            <Label className="text-xs text-muted-foreground uppercase">Update Respondent (Optional)</Label>
+                                            <Select
+                                                onValueChange={handleRespondentSelect}
+                                                value={data.respondent_user_id || "manual"}
+                                                disabled={!isEditable}
+                                            >
                                                 <SelectTrigger className="bg-background">
-                                                    <SelectValue placeholder="Select a registered resident..." />
+                                                    <SelectValue placeholder="Search or Select a Resident..." />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="manual" className="font-medium text-blue-600">
-                                                        -- Manual Entry (Not in list) --
-                                                    </SelectItem>
+                                                    <SelectItem value="manual" className="font-medium text-blue-600">-- Manual Entry --</SelectItem>
                                                     {users.map((user) => (
                                                         <SelectItem key={user.id} value={user.id.toString()}>
                                                             {user.name}
@@ -139,15 +167,14 @@ export default function Create({ users }: { users: User[] }) {
                                             </Select>
                                         </div>
 
-                                        {/* Name Input */}
                                         <div className="space-y-2">
-                                            <Label htmlFor="respondent_name">Respondent Name <span className="text-red-500">*</span></Label>
+                                            <Label htmlFor="respondent_name">Respondent Name</Label>
                                             <div className="relative">
                                                 <Input
                                                     id="respondent_name"
-                                                    placeholder="Enter full name of respondent"
                                                     value={data.respondent_name}
-                                                    readOnly={!!data.respondent_user_id}
+                                                    readOnly={!!data.respondent_user_id || !isEditable}
+                                                    disabled={!isEditable}
                                                     className={`h-11 ${data.respondent_user_id ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-background'}`}
                                                     onChange={(e) => setData('respondent_name', e.target.value)}
                                                 />
@@ -164,19 +191,19 @@ export default function Create({ users }: { users: User[] }) {
 
                                 {/* Description */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="description">Detailed Narrative <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="description">Detailed Narrative</Label>
                                     <Textarea
                                         id="description"
-                                        placeholder="Please describe the incident in detail (Who, What, Where, When, Why)..."
                                         className="min-h-[180px] resize-y bg-background leading-relaxed"
                                         value={data.description}
+                                        disabled={!isEditable}
                                         onChange={(e) => setData('description', e.target.value)}
                                     />
                                     <InputError message={errors.description} />
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-4">
+                                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-4 border-t mt-6">
                                     <Button
                                         type="button"
                                         variant="outline"
@@ -185,17 +212,20 @@ export default function Create({ users }: { users: User[] }) {
                                     >
                                         <X className="mr-2 h-4 w-4" /> Cancel
                                     </Button>
-                                    <Button
-                                        type="submit"
-                                        className="w-full sm:w-auto bg-primary hover:bg-primary/90"
-                                        disabled={processing}
-                                    >
-                                        {processing ? (
-                                            <> <Spinner className="mr-2 h-4 w-4" /> Submitting... </>
-                                        ) : (
-                                            <> <Send className="mr-2 h-4 w-4" /> Submit Report </>
-                                        )}
-                                    </Button>
+
+                                    {isEditable && (
+                                        <Button
+                                            type="submit"
+                                            className="w-full sm:w-auto bg-primary hover:bg-primary/90"
+                                            disabled={processing}
+                                        >
+                                            {processing ? (
+                                                <> <Spinner className="mr-2 h-4 w-4" /> Saving... </>
+                                            ) : (
+                                                <> <Save className="mr-2 h-4 w-4" /> Save Changes </>
+                                            )}
+                                        </Button>
+                                    )}
                                 </div>
                             </form>
                         </CardContent>

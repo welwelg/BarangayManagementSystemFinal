@@ -232,6 +232,9 @@ Route::middleware(['role:admin|superadmin'])->group(function () {
         'destroy' => 'permission:blotter.delete',
     ]);
 
+    Route::put('/admin/blotter/{blotter}/status', [BlotterController::class, 'updateStatus'])
+    ->name('admin.blotter.update-status');
+
     Route::put('/admin/blotter/{blotter}/approve', [App\Http\Controllers\Admin\BlotterController::class, 'approve'])
         ->middleware('permission:blotter.edit')
         ->name('admin.blotter.approve');

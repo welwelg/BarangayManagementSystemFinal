@@ -55,6 +55,8 @@
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
         "date-fns": "^4.1.0",
+        "embla-carousel-autoplay": "^8.6.0",
+        "embla-carousel-react": "^8.6.0",
         "globals": "^15.14.0",
         "laravel-echo": "^2.2.6",
         "laravel-vite-plugin": "^2.0",

@@ -10,6 +10,7 @@ class Blotter extends Model
     protected $fillable = [
         'user_id',
         'type',
+        'respondent_name',
         'description',
         'status',
         'scheduled_at',
