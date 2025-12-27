@@ -19,7 +19,7 @@ export default function Welcome({ auth }) {
                             {/* Logo */}
                             <div className="flex items-center space-x-3">
                                 <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-lg">
-                                    <img src="/brgylogo.png" alt="Barangay Logo" className="h-full w-full object-cover" />
+                                    <img src="/BarangayDemo.png" alt="Barangay Logo" className="h-full w-full object-cover" />
                                 </div>
                                 <div>
                                     <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold text-transparent">

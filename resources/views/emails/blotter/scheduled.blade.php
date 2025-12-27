@@ -20,10 +20,6 @@ Barangay Hall
 
 Please ensure you are present at the scheduled time. Failure to appear may result in the dismissal of your complaint.
 
-<x-mail::button :url="route('residentuser.blotter.show', $blotter->id)">
-View Report Details
-</x-mail::button>
-
 Regards,<br>
 {{ config('app.name') }}
 </x-mail::message>

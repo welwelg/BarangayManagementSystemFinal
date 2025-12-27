@@ -2,7 +2,7 @@ import { type NavItem } from '@/types';
 import { CloudRainWind, FolderKanban, LayoutDashboard, Megaphone, MessageSquareWarning, Notebook, TriangleAlert, Users } from 'lucide-react';
 import { AiFillMessage } from 'react-icons/ai';
 import { LuShieldEllipsis } from 'react-icons/lu';
-import { LuLogs } from 'react-icons/lu';
+import { ClipboardList } from 'lucide-react';
 
 export const allNavItems: NavItem[] = [
     // System Management (SuperAdmin/Admin items)
@@ -92,7 +92,7 @@ export const allNavItems: NavItem[] = [
     {
             title: 'Blotter',
             href: '/admin/blotter',
-            icon: LuLogs,
+            icon: ClipboardList,
             roles: ['admin', 'superadmin'],
             actions: ['view', 'create', 'edit', 'delete'],
             resource: 'blotter',
@@ -150,7 +150,7 @@ export const allNavItems: NavItem[] = [
     {
             title: 'Blotter',
             href: '/residentuser/blotter',
-            icon: LuLogs,
+            icon: ClipboardList,
             roles: ['user'],
             actions: ['view', 'create', 'edit', 'delete'],
             resource: 'residentuser-blotter',

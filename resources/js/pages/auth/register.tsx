@@ -32,11 +32,19 @@ export default function Register() {
             <Head title="Register" />
             <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
                 <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 md:p-8 dark:border-gray-700 dark:bg-gray-800">
-                    {/* Logo Section */}
+
+                    {/* 🟢 UPDATED LOGO SECTION (COMPACT) 🟢 */}
                     <div className="mb-6 flex flex-col items-center">
-                        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-                            <img src="/brgylogo.png" alt="Barangay Logo" className="h-12 w-12 object-contain" />
+                        {/* Wrapper: White background, rounded corners, shadow, compact padding */}
+                        <div className="mb-4 flex items-center justify-center rounded-xl bg-white p-2 shadow-sm">
+                            <img
+                                src="/BarangayDemo.png"
+                                alt="Barangay Logo"
+                                // Image Size: h-20 (80px) to match login
+                                className="h-20 w-auto object-contain"
+                            />
                         </div>
+
                         <h2 className="text-center text-xl font-bold text-gray-900 dark:text-white">Barangay Management System</h2>
                         <p className="mt-1 text-center text-sm text-gray-600 dark:text-gray-300">Create your account</p>
                     </div>

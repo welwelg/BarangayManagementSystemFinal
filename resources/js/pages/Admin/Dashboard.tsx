@@ -62,88 +62,92 @@ export default function Dashboard({ stats = {} }: DashboardProps) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-white p-4 dark:bg-gray-950">
                 {/* Top Section - Main Stats Cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    {' '}
-                    {/* Responsive: 1 col mobile, 2 sm, 4 md+ */}
-                    <Card className="rounded-2xl border-0 bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
-                        <CardContent className="p-4 sm:p-6">
-                            {' '}
-                            {/* Responsive padding */}
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <h2 className="text-base font-bold sm:text-lg">Residents</h2> {/* Smaller on mobile */}
-                                    <p className="text-xs text-blue-100 sm:text-sm">Total registered residents</p>
-                                </div>
-                                <div className="rounded-xl bg-white/20 p-2 sm:p-3">
-                                    {' '}
-                                    {/* Smaller padding on mobile */}
-                                    <Users className="h-12 w-12 sm:h-20 sm:w-20" /> {/* Smaller icon on mobile */}
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <span className="text-2xl font-bold sm:text-4xl">{total_residents}</span> {/* Smaller on mobile */}
-                                <span className="ml-2 text-xs text-blue-100 sm:text-sm">Total</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="rounded-2xl border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
-                        <CardContent className="p-4 sm:p-6">
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <h2 className="text-base font-bold sm:text-lg">Announcements</h2>
-                                    <p className="text-xs text-emerald-100 sm:text-sm">Post news & alerts</p>
-                                </div>
-                                <div className="rounded-xl bg-white/20 p-2 sm:p-3">
-                                    <Megaphone className="h-12 w-12 sm:h-20 sm:w-20" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <span className="text-2xl font-bold sm:text-4xl">{total_announcements}</span>
-                                <span className="ml-2 text-xs text-emerald-100 sm:text-sm">Published</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="rounded-2xl border-0 bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
-                        <CardContent className="p-4 sm:p-6">
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <h2 className="text-base font-bold sm:text-lg">Complaints</h2>
-                                    <p className="text-xs text-orange-100 sm:text-sm">Track and resolve issues</p>
-                                </div>
-                                <div className="rounded-xl bg-white/20 p-2 sm:p-3">
-                                    <MessageSquareWarning className="h-12 w-12 sm:h-20 sm:w-20" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <span className="text-2xl font-bold sm:text-4xl">{pending_complaints}</span>
-                                <span className="ml-2 text-xs text-orange-100 sm:text-sm">Pending</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="rounded-2xl border-0 bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
-                        <CardContent className="p-4 sm:p-6">
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <h2 className="text-base font-bold sm:text-lg">Disaster Reports</h2>
-                                    <p className="text-xs text-red-100 sm:text-sm">Emergency incidents</p>
-                                </div>
-                                <div className="rounded-xl bg-white/20 p-2 sm:p-3">
-                                    <AlertTriangle className="h-12 w-12 sm:h-20 sm:w-20" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <span className="text-2xl font-bold sm:text-4xl">{pending_disaster_reports}</span>
-                                <span className="ml-2 text-xs text-red-100 sm:text-sm">Pending</span>
-                            </div>
-                        </CardContent>
-                    </Card>
+                {/* Top Section - Main Stats Cards */}
+<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+    {/* 1. RESIDENTS CARD */}
+    <Card className="rounded-2xl border-0 bg-linear-to-br from-sky-500 to-sky-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-4"> {/* Changed to justify-between for better spacing */}
+                <div className="min-w-0 flex-1"> {/* Added min-w-0 to allow text truncation if needed */}
+                    <h2 className="text-base font-bold sm:text-lg truncate">Residents</h2>
+                    <p className="text-xs text-blue-100 sm:text-sm truncate">Total registered residents</p>
                 </div>
+                {/* Responsive Icon Container */}
+                <div className="shrink-0 rounded-xl bg-white/20 p-2 sm:p-3">
+                    <Users className="h-8 w-8 sm:h-10 sm:w-10 lg:h-14 lg:w-14" />
+                </div>
+            </div>
+            <div className="mt-4">
+                <span className="text-2xl font-bold sm:text-3xl lg:text-4xl">{total_residents}</span>
+                <span className="ml-2 text-xs text-blue-100 sm:text-sm">Total</span>
+            </div>
+        </CardContent>
+    </Card>
+
+    {/* 2. ANNOUNCEMENTS CARD (THE FIX) */}
+    <Card className="rounded-2xl border-0 bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-base font-bold sm:text-lg truncate">Announcements</h2>
+                    <p className="text-xs text-emerald-100 sm:text-sm truncate">Post news & alerts</p>
+                </div>
+                {/* Responsive Icon: flex-shrink-0 prevents squashing, sizes adjusted */}
+                <div className="shrink-0 rounded-xl bg-white/20 p-2 sm:p-3">
+                    <Megaphone className="h-8 w-8 sm:h-10 sm:w-10 lg:h-14 lg:w-14" />
+                </div>
+            </div>
+            <div className="mt-4">
+                <span className="text-2xl font-bold sm:text-3xl lg:text-4xl">{total_announcements}</span>
+                <span className="ml-2 text-xs text-emerald-100 sm:text-sm">Published</span>
+            </div>
+        </CardContent>
+    </Card>
+
+    {/* 3. COMPLAINTS CARD */}
+    <Card className="rounded-2xl border-0 bg-linear-to-br from-orange-500 to-amber-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-base font-bold sm:text-lg truncate">Complaints</h2>
+                    <p className="text-xs text-orange-100 sm:text-sm truncate">Track and resolve</p>
+                </div>
+                <div className="shrink-0 rounded-xl bg-white/20 p-2 sm:p-3">
+                    <MessageSquareWarning className="h-8 w-8 sm:h-10 sm:w-10 lg:h-14 lg:w-14" />
+                </div>
+            </div>
+            <div className="mt-4">
+                <span className="text-2xl font-bold sm:text-3xl lg:text-4xl">{pending_complaints}</span>
+                <span className="ml-2 text-xs text-orange-100 sm:text-sm">Pending</span>
+            </div>
+        </CardContent>
+    </Card>
+
+    {/* 4. DISASTER REPORTS CARD */}
+    <Card className="rounded-2xl border-0 bg-linear-to-br from-red-500 to-pink-600 text-white shadow-lg transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-base font-bold sm:text-lg truncate">Disasters</h2>
+                    <p className="text-xs text-red-100 sm:text-sm truncate">Emergency incidents</p>
+                </div>
+                <div className="shrink-0 rounded-xl bg-white/20 p-2 sm:p-3">
+                    <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-14 lg:w-14" />
+                </div>
+            </div>
+            <div className="mt-4">
+                <span className="text-2xl font-bold sm:text-3xl lg:text-4xl">{pending_disaster_reports}</span>
+                <span className="ml-2 text-xs text-red-100 sm:text-sm">Pending</span>
+            </div>
+        </CardContent>
+    </Card>
+</div>
 
                 {/* Detailed Resident Stats */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
                     {' '}
                     {/* Responsive: 1 col mobile, 2 sm, 4 md+ */}
-                    <Card className="border-1 border-sky-300 bg-gradient-to-r from-sky-100 to-sky-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-sky-800 dark:from-sky-700 dark:to-sky-900">
+                    <Card className="border border-sky-300 bg-linear-to-r from-sky-100 to-sky-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-sky-800 dark:from-sky-700 dark:to-sky-900">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-2">
                                 <UserCheck className="h-5 w-5 text-sky-900 dark:text-white" />
@@ -155,7 +159,7 @@ export default function Dashboard({ stats = {} }: DashboardProps) {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="border-1 border-pink-300 bg-gradient-to-r from-pink-100 to-pink-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-pink-800 dark:from-pink-700 dark:to-pink-900">
+                    <Card className="border border-pink-300 bg-linear-to-r from-pink-100 to-pink-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-pink-800 dark:from-pink-700 dark:to-pink-900">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-2">
                                 <UserX className="h-5 w-5 text-pink-500 dark:text-white" />
@@ -166,7 +170,7 @@ export default function Dashboard({ stats = {} }: DashboardProps) {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="border-1 border-green-300 bg-gradient-to-r from-green-100 to-green-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-green-800 dark:from-green-700 dark:to-green-900">
+                    <Card className="border border-green-300 bg-linear-to-r from-green-100 to-green-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-green-800 dark:from-green-700 dark:to-green-900">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-green-500 dark:text-white" />
@@ -178,7 +182,7 @@ export default function Dashboard({ stats = {} }: DashboardProps) {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="border-1 border-purple-300 bg-gradient-to-r from-purple-100 to-purple-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-purple-800 dark:from-purple-700 dark:to-purple-900">
+                    <Card className="border border-purple-300 bg-linear-to-r from-purple-100 to-purple-300 shadow-md transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg dark:border-purple-800 dark:from-purple-700 dark:to-purple-900">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-2">
                                 <MapPin className="h-5 w-5 text-purple-500 dark:text-white" />

@@ -8,7 +8,7 @@ import { CloudRainWind, FolderKanban, LayoutDashboard, Megaphone, MessageSquareW
 import { AiFillMessage } from 'react-icons/ai';
 import { LuShieldEllipsis } from 'react-icons/lu';
 import AppLogo from './app-logo';
-import { LuLogs } from 'react-icons/lu';
+import { ClipboardList } from 'lucide-react';
 
 // All navigation items with roles
 const allNavItems: NavItem[] = [
@@ -107,7 +107,7 @@ const allNavItems: NavItem[] = [
     {
         title: 'Blotter',
         href: '/admin/blotter',
-        icon: LuLogs,
+        icon: ClipboardList,
         roles: ['admin', 'superadmin'],
         actions: ['view', 'create', 'edit', 'delete'],
         resource: 'blotter',
@@ -165,7 +165,7 @@ const allNavItems: NavItem[] = [
      {
             title: 'Blotter',
             href: '/residentuser/blotter',
-            icon: LuLogs,
+            icon: ClipboardList,
             roles: ['user'],
             actions: ['view', 'create', 'edit', 'delete'],
             resource: 'residentuser-blotter',
