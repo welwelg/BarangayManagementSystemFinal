@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\BlotterController;
 
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\PermissionManagementController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -77,6 +78,9 @@ Route::middleware(['role:admin|superadmin'])->group(function () {
     Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
         ->middleware('permission:admin-dashboard.view')
         ->name('admin.dashboard');
+
+    //Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
     // ===============================
     // 📧 MESSAGE ROUTES

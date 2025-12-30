@@ -3,7 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Head, Link } from '@inertiajs/react';
 import { ChevronRight, Clock, Mail, MapPin, Megaphone, Phone, TriangleAlert, Users } from 'lucide-react';
 
-export default function Welcome({ auth }) {
+interface WelcomeProps {
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        } | null;
+    };
+}
+export default function Welcome({ auth }: WelcomeProps) {
     return (
         <>
             <Head title="Welcome">
@@ -11,7 +20,7 @@ export default function Welcome({ auth }) {
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+            <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50">
                 {/* Navigation Header */}
                 <nav className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-sm">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -22,7 +31,7 @@ export default function Welcome({ auth }) {
                                     <img src="/BarangayDemo.png" alt="Barangay Logo" className="h-full w-full object-cover" />
                                 </div>
                                 <div>
-                                    <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold text-transparent">
+                                    <h1 className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold text-transparent">
                                         Barangay Management
                                     </h1>
                                     <p className="text-sm text-slate-500">System</p>
@@ -58,7 +67,7 @@ export default function Welcome({ auth }) {
                                             </Button>
                                         </Link>
                                         <Link href={route('register')}>
-                                            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700">
+                                            <Button className="bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700">
                                                 Register
                                             </Button>
                                         </Link>
@@ -76,7 +85,7 @@ export default function Welcome({ auth }) {
                         <div className="space-y-6">
                             <h2 className="text-4xl leading-tight font-extrabold text-slate-800">
                                 Empowering Communities with{' '}
-                                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                <span className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                     Smart Barangay Management
                                 </span>
                             </h2>
@@ -88,7 +97,7 @@ export default function Welcome({ auth }) {
                             <div className="flex flex-col gap-4 sm:flex-row">
                                 <Button
                                     size="lg"
-                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl transition-all duration-300 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
+                                    className="bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-xl transition-all duration-300 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
                                 >
                                     Get Started
                                     <ChevronRight className="ml-2 h-4 w-4" />
@@ -107,7 +116,7 @@ export default function Welcome({ auth }) {
                         <div className="relative">
                             <div className="relative z-10">
                                 <Card className="hover:shadow-3xl border-0 bg-white/90 shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:shadow-blue-500/30">
-                                    <CardHeader className="rounded-t-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                                    <CardHeader className="rounded-t-lg bg-linear-to-r from-blue-600 to-indigo-600 text-white">
                                         <CardTitle className="flex items-center space-x-2">
                                             <Users className="h-5 w-5" />
                                             <span>Barangay Dashboard</span>
@@ -142,8 +151,8 @@ export default function Welcome({ auth }) {
                             </div>
 
                             {/* Background Decorations */}
-                            <div className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-blue-400 to-indigo-400 opacity-20 blur-xl"></div>
-                            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 opacity-20 blur-xl"></div>
+                            <div className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-linear-to-br from-blue-400 to-indigo-400 opacity-20 blur-xl"></div>
+                            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-linear-to-br from-purple-400 to-pink-400 opacity-20 blur-xl"></div>
                         </div>
                     </div>
                 </div>
@@ -159,7 +168,7 @@ export default function Welcome({ auth }) {
                         <div className="grid gap-8 md:grid-cols-3">
                             <Card className="border border-slate-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <CardHeader>
-                                    <div className="w-fit rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 p-3">
+                                    <div className="w-fit rounded-lg bg-linear-to-br from-blue-500 to-indigo-500 p-3">
                                         <Users className="h-6 w-6 text-white" />
                                     </div>
                                     <CardTitle className="text-slate-800">Resident Management</CardTitle>
@@ -169,7 +178,7 @@ export default function Welcome({ auth }) {
 
                             <Card className="border border-slate-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <CardHeader>
-                                    <div className="w-fit rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 p-3">
+                                    <div className="w-fit rounded-lg bg-linear-to-br from-emerald-500 to-teal-500 p-3">
                                         <Megaphone className="h-6 w-6 text-white" />
                                     </div>
                                     <CardTitle className="text-slate-800">Announcements</CardTitle>
@@ -179,7 +188,7 @@ export default function Welcome({ auth }) {
 
                             <Card className="border border-slate-200/60 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <CardHeader>
-                                    <div className="w-fit rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 p-3">
+                                    <div className="w-fit rounded-lg bg-linear-to-br from-orange-500 to-amber-500 p-3">
                                         <TriangleAlert className="h-6 w-6 text-white" />
                                     </div>
                                     <CardTitle className="text-slate-800">Disaster Reports</CardTitle>
@@ -203,7 +212,7 @@ export default function Welcome({ auth }) {
                         <div className="grid gap-8 md:grid-cols-3">
                             <Card className="border border-slate-200/60 bg-white/80 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-400/30">
                                 <CardContent className="p-6">
-                                    <div className="mx-auto mb-4 w-fit rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 p-4">
+                                    <div className="mx-auto mb-4 w-fit rounded-full bg-linear-to-br from-blue-500 to-indigo-500 p-4">
                                         <Phone className="h-8 w-8 text-white" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-semibold text-slate-800">Phone</h3>
@@ -214,7 +223,7 @@ export default function Welcome({ auth }) {
 
                             <Card className="border border-slate-200/60 bg-white/80 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-emerald-400/30">
                                 <CardContent className="p-6">
-                                    <div className="mx-auto mb-4 w-fit rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 p-4">
+                                    <div className="mx-auto mb-4 w-fit rounded-full bg-linear-to-br from-emerald-500 to-teal-500 p-4">
                                         <Mail className="h-8 w-8 text-white" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-semibold text-slate-800">Email</h3>
@@ -225,7 +234,7 @@ export default function Welcome({ auth }) {
 
                             <Card className="border border-slate-200/60 bg-white/80 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-400/30">
                                 <CardContent className="p-6">
-                                    <div className="mx-auto mb-4 w-fit rounded-full bg-gradient-to-br from-purple-500 to-violet-500 p-4">
+                                    <div className="mx-auto mb-4 w-fit rounded-full bg-linear-to-br from-purple-500 to-violet-500 p-4">
                                         <MapPin className="h-8 w-8 text-white" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-semibold text-slate-800">Address</h3>
@@ -241,7 +250,7 @@ export default function Welcome({ auth }) {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col items-center justify-between md:flex-row">
                             <div className="mb-4 flex items-center space-x-3 md:mb-0">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-indigo-400">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-blue-400 to-indigo-400">
                                     <img src="/brgylogo.png" alt="Barangay Logo" className="h-full w-full object-cover" />
                                 </div>
                                 <span className="text-lg font-semibold">Barangay Management System</span>

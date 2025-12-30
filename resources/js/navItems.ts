@@ -3,6 +3,7 @@ import { CloudRainWind, FolderKanban, LayoutDashboard, Megaphone, MessageSquareW
 import { AiFillMessage } from 'react-icons/ai';
 import { LuShieldEllipsis } from 'react-icons/lu';
 import { ClipboardList } from 'lucide-react';
+import { ChartColumnStacked } from 'lucide-react';
 
 export const allNavItems: NavItem[] = [
     // System Management (SuperAdmin/Admin items)
@@ -13,6 +14,14 @@ export const allNavItems: NavItem[] = [
         roles: ['admin', 'superadmin'],
         actions: ['view'],
         resource: 'admin-dashboard',
+    },
+     {
+        title: 'Analytics',
+        href: '/analytics',
+        icon: ChartColumnStacked,
+        roles: ['superadmin', 'admin'],
+        actions: ['view', 'create', 'edit', 'delete'],
+        resource: 'analytics',
     },
     {
         title: 'Manage Users',
