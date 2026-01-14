@@ -1,2 +1,3 @@
 # Laravel12+react+inertia+shadcn+spatie
 this is laravel12 +react+inertia+shadcn+spatie for multi auth and permissions set up
+![Alt](https://repobeats.axiom.co/api/embed/d1fa80de670c17f4f064421b0571a90e0602d6b7.svg "Repobeats analytics image")
