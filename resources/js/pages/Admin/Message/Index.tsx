@@ -384,13 +384,13 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                                     {conv.userName}
                                                 </span>
 
-                                                <div className="flex flex-shrink-0 flex-col items-end text-right leading-tight">
+                                                <div className="flex shrink-0 flex-col items-end text-right leading-tight">
                                                     <span className="text-[10px] text-muted-foreground sm:text-[11px]">
                                                         {format(new Date(conv.lastMessage.created_at), 'MMM d')}
                                                     </span>
 
                                                     {conv.unreadCount > 0 && (
-                                                        <span className="mt-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white sm:h-5 sm:min-w-[1.25rem] sm:text-[10px]">
+                                                        <span className="mt-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white sm:h-5 sm:min-w-5 sm:text-[10px]">
                                                             {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
                                                         </span>
                                                     )}
@@ -445,7 +445,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
 
                                         return (
                                             <div key={message.id} className={`flex gap-2 ${isSent ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                <Avatar className="h-7 w-7 flex-shrink-0 sm:h-8 sm:w-8">
+                                                <Avatar className="h-7 w-7 shrink-0 sm:h-8 sm:w-8">
                                                     <AvatarFallback
                                                         className={isSent ? 'bg-primary text-[10px] text-primary-foreground sm:text-xs' : 'bg-muted text-[10px] sm:text-xs'}
                                                     >
@@ -501,7 +501,7 @@ export default function Index({ auth, messages, unreadCount }: IndexProps) {
                                         <Textarea
                                             value={messageText}
                                             onChange={(e) => {
-                                                sendTyping();
+                                                sendTyping(true);
                                                 setMessageText(e.target.value);
                                             }}
                                             placeholder="Type a message..."

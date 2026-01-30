@@ -160,7 +160,7 @@ export default function Show({ blotter }: { blotter: Blotter }) {
 
           <CardFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
             <Button variant="outline" className="w-full sm:w-auto" onClick={() => window.history.back()}>
-              ← Back to List
+              Back to List
             </Button>
           </CardFooter>
         </Card>

@@ -1,11 +1,10 @@
 import AppLayout from '@/layouts/app-layout';
 import { toast } from '@/lib/toast';
-
 import { type BreadcrumbItem } from '@/types';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Download, Edit, Mail, MapPin, Phone, Search, Trash2, Upload, UserPlus, Users } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MdManageAccounts } from 'react-icons/md';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,21 +43,82 @@ interface PageProps extends InertiaPageProps {
         per_page: number;
         total: number;
     };
+    total_residents_count: number;
+    total_male: number;
+    total_female: number;
+    filters?: {
+        search?: string;
+        gender?: string;
+    };
+    // Flash messages from Laravel (with('flash', ...))
     flash?: {
         message?: string;
+        type?: 'success' | 'error';
     };
+    // Validation errors from Laravel (withErrors(...))
+    errors: Record<string, string>;
 }
 
 export default function Index() {
-    const { residents } = usePage<PageProps>().props;
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedGender, setSelectedGender] = useState('all');
+    // Destructure Props including flash and errors
+    const { residents, total_residents_count, total_male, total_female, filters, flash, errors } = usePage<PageProps>().props;
+
+    // Initialize State
+    const [searchQuery, setSearchQuery] = useState(filters?.search || '');
+    const [selectedGender, setSelectedGender] = useState(filters?.gender || 'all');
+
+    // Refs for preventing initial search run & file input
+    const isMounted = useRef(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    // -- HANDLE SERVER MESSAGES (Toast Logic) ---
+    useEffect(() => {
+        // Handle Validation Errors (e.g., Import failed)
+        if (errors.file) {
+            toast.error(errors.file); // Show the specific error from Controller
+        }
+
+        // Handle Success/Flash Messages
+        if (flash?.message) {
+            if (flash.type === 'success') {
+                toast.success(flash.message);
+            } else if (flash.type === 'error') {
+                toast.error(flash.message);
+            }
+        }
+    }, [flash, errors]);
+
+    // ---  SERVER-SIDE SEARCH TRIGGER  ---
+    useEffect(() => {
+        // Skip the first run (initial mount) so we don't reset pagination immediately
+        if (isMounted.current) {
+            const delayDebounceFn = setTimeout(() => {
+                router.get(
+                    route('admin.residents.index'),
+                    {
+                        search: searchQuery,
+                        gender: selectedGender === 'all' ? '' : selectedGender
+                    },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        replace: true,
+                    }
+                );
+            }, 300);
+
+            return () => clearTimeout(delayDebounceFn);
+        } else {
+            // Mark as mounted so next time it runs
+            isMounted.current = true;
+        }
+    }, [searchQuery, selectedGender]);
 
     const handleExport = () => {
         window.location.href = route('admin.residents.export');
     };
 
+    // ---  UPDATED IMPORT HANDLER ---
     const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -67,8 +127,18 @@ export default function Index() {
         formData.append('file', file);
 
         router.post(route('admin.residents.import'), formData, {
-            onSuccess: () => toast.success('Import successful!'),
-            onError: () => toast.error('Import failed. Please check the file format.'),
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                // We do NOT show toast here manually anymore.
+                // We let the useEffect[flash] above handle the success message from the server.
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+            onError: (err) => {
+                // We do NOT show toast here manually.
+                // We let the useEffect[errors] above handle the error message.
+                console.error("Import Error:", err);
+            },
         });
     };
 
@@ -87,27 +157,13 @@ export default function Index() {
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this resident?')) {
             router.delete(route('admin.residents.destroy', id), {
-                onSuccess: () => toast.success(' Resident deleted successfully!'),
-                onError: () => toast.error(' Failed to delete resident.'),
+                // Success/Error toasts are now handled globally by the useEffect above
+                // but we can keep these if the controller doesn't send flash messages for delete
+                onSuccess: () => toast.success('Resident deleted successfully!'),
+                onError: () => toast.error('Failed to delete resident.'),
             });
         }
     };
-
-    const filteredResidents = residents.data.filter((resident) => {
-        const matchesSearch =
-            resident.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (resident.middle_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            resident.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (resident.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            resident.contact_no.includes(searchQuery);
-
-        const matchesGender = selectedGender === 'all' || resident.gender.toLowerCase() === selectedGender;
-
-        return matchesSearch && matchesGender;
-    });
-
-    const totalMale = residents.data.filter((r) => r.gender.toLowerCase() === 'male').length;
-    const totalFemale = residents.data.filter((r) => r.gender.toLowerCase() === 'female').length;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -144,7 +200,7 @@ export default function Index() {
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">{residents.total}</p>
+                                    <p className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">{total_residents_count}</p>
                                     <p className="text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400">Total Residents</p>
                                 </div>
                             </div>
@@ -156,7 +212,7 @@ export default function Index() {
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-xl font-bold text-pink-600 sm:text-2xl dark:text-pink-400">{totalFemale}</p>
+                                    <p className="text-xl font-bold text-pink-600 sm:text-2xl dark:text-pink-400">{total_female}</p>
                                     <p className="text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400">Female</p>
                                 </div>
                             </div>
@@ -168,7 +224,7 @@ export default function Index() {
                                     <Users className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">{totalMale}</p>
+                                    <p className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">{total_male}</p>
                                     <p className="text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400">Male</p>
                                 </div>
                             </div>
@@ -250,8 +306,8 @@ export default function Index() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredResidents.length > 0 ? (
-                                        filteredResidents.map((resident) => (
+                                    {residents.data.length > 0 ? (
+                                        residents.data.map((resident) => (
                                             <tr
                                                 key={resident.id}
                                                 className="border-b border-slate-200 transition-colors hover:bg-slate-50/50 dark:border-gray-700 dark:hover:bg-gray-700/50"
@@ -351,8 +407,8 @@ export default function Index() {
                                                 link.active
                                                     ? 'bg-linear-to-r from-blue-500 to-indigo-500 text-white'
                                                     : link.url
-                                                      ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-gray-700'
-                                                      : 'cursor-not-allowed border border-slate-200 bg-white text-slate-400 opacity-50 dark:border-slate-600 dark:bg-gray-800'
+                                                    ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-gray-700'
+                                                    : 'cursor-not-allowed border border-slate-200 bg-white text-slate-400 opacity-50 dark:border-slate-600 dark:bg-gray-800'
                                             }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />

@@ -24,7 +24,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { IconAlertTriangle, IconCalendar, IconClock, IconFileText, IconUser, IconFiles, IconChecklist, IconChecks } from '@tabler/icons-react';
 import { toast } from 'sonner';
-import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Eye, Edit, Trash2 } from 'lucide-react';
 
 interface Blotter {
     id: number;
@@ -80,7 +80,7 @@ export default function Index({ blotters, stats }: BlotterIndexProps) {
         }
     };
 
-    // ✅ STATUS BADGE COMPONENT
+    // STATUS BADGE COMPONENT
     const StatusBadge = ({ blotter }: { blotter: Blotter }) => {
         if (blotter.status === 'settled') {
             return (
@@ -138,7 +138,7 @@ export default function Index({ blotters, stats }: BlotterIndexProps) {
             <EmptyContent>
                 <Link href={route('residentuser.blotter.create')}>
                     <Button className="gap-2">
-                        <Plus className="h-4 w-4" /> File New Report
+                         File New Report
                     </Button>
                 </Link>
             </EmptyContent>
@@ -163,7 +163,7 @@ export default function Index({ blotters, stats }: BlotterIndexProps) {
                         {hasReports && (
                             <Link href={route('residentuser.blotter.create')}>
                                 <Button className="w-full sm:w-auto gap-2 shadow-sm">
-                                    <Plus className="h-4 w-4" /> File Report
+                                    File Report
                                 </Button>
                             </Link>
                         )}

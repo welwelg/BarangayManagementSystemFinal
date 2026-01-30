@@ -1,20 +1,21 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowLeft, CheckCircle2, Send, User } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Messages', href: '/admin/message' },
-    { title: 'Send Message', href: '/admin/message/create' },
+    { title: 'New Message', href: '/admin/message/create' },
 ];
 
-interface User {
+interface UserType {
     id: number;
     name: string;
     email: string;
@@ -27,7 +28,7 @@ interface CreateProps {
             name: string;
         };
     };
-    users: User[];
+    users: UserType[];
     recipientId?: number;
 }
 
@@ -37,11 +38,12 @@ export default function Create({ auth, users, recipientId }: CreateProps) {
         body: '',
     });
 
-    const [selectedUser, setSelectedUser] = useState<User | null>(users.find((u) => u.id === recipientId) || null);
+    const [selectedUser, setSelectedUser] = useState<UserType | null>(
+        users.find((u) => u.id === recipientId) || null
+    );
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-
         post(route('admin.message.store'), {
             onSuccess: () => {
                 reset('body');
@@ -68,132 +70,168 @@ export default function Create({ auth, users, recipientId }: CreateProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Send Message" />
 
-            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto rounded-xl p-2 sm:gap-4 sm:p-4">
-                {/* Header Section - Responsive */}
-                <div className="relative min-h-fit rounded-xl border border-sidebar-border/70 p-3 sm:p-4 md:p-6 dark:border-gray-700">
-                    <div className="flex flex-col items-start justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
-                        <div className="min-w-0 flex-1">
-                            <h1 className="text-xl font-bold sm:text-2xl dark:text-white">Send Message</h1>
-                            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Send a message to a resident user</p>
-                        </div>
+            {/* Main Container with subtle gradient background */}
+            <div className="flex min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center bg-slate-50/50 px-4 py-8 dark:bg-slate-950/50 sm:px-6">
 
-                        <Link href={route('admin.message.index')} className="w-full sm:w-auto">
-                            <Button variant="outline" className="w-full text-xs sm:w-auto sm:text-sm">
-                                Back to Messages
-                            </Button>
+                {/* Max width container for better readability */}
+                <div className="w-full max-w-2xl space-y-6">
+
+                    {/* Header Navigation */}
+                    <div className="flex items-center justify-between">
+                        <Link
+                            href={route('admin.message.index')}
+                            className="group flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        >
+                            <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white transition-all group-hover:border-slate-300 group-hover:shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                                <ArrowLeft className="h-4 w-4" />
+                            </div>
+                            Back to Inbox
                         </Link>
                     </div>
-                </div>
 
-                {/* Form Card - Responsive */}
-                <div className="flex-1 rounded-xl">
-                    <Card className="mx-auto w-full">
-                        <CardContent className="p-3 sm:p-4 md:p-6">
-                            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                                {/* Sender Info */}
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-                                    <div className="flex-shrink-0">
-                                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12">
-                                            <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white sm:text-sm">
-                                                {getInitials(auth.user.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-xs font-medium text-muted-foreground sm:text-sm">Sending as</p>
-                                        <p className="truncate text-sm font-semibold sm:text-base dark:text-white">{auth.user.name}</p>
-                                    </div>
+                    <Card className="overflow-hidden border-slate-200 shadow-lg dark:border-slate-800">
+                        {/* Card Header with Sender Info */}
+                        <CardHeader className="bg-slate-50/50 pb-8 dark:bg-slate-900/50">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <CardTitle className="text-xl font-bold">Compose Message</CardTitle>
+                                    <CardDescription className="mt-1">
+                                        Send a direct message to a resident user.
+                                    </CardDescription>
                                 </div>
+                                {/* Sender Badge */}
+                                <div className="hidden sm:flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 shadow-sm dark:bg-slate-950">
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarFallback className="bg-blue-600 text-[10px] text-white">
+                                            {getInitials(auth.user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                        {auth.user.name} (Admin)
+                                    </span>
+                                </div>
+                            </div>
+                        </CardHeader>
 
-                                <div className="h-px bg-border" />
+                        <form onSubmit={handleSubmit}>
+                            <CardContent className="-mt-4 space-y-6 bg-white p-6 pt-0 dark:bg-slate-950">
+                                {/* Form Grid */}
+                                <div className="grid gap-6">
 
-                                {/* Recipient Selection - Responsive */}
-                                <div className="space-y-2 sm:space-y-3">
-                                    <div>
-                                        <Label htmlFor="recipient" className="text-xs font-medium sm:text-sm">
-                                            Select Recipient <span className="text-red-500">*</span>
+                                    {/* Recipient Selection */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="recipient" className="text-sm font-semibold">
+                                            Recipient
                                         </Label>
                                         <Select
                                             value={data.recipient_id}
                                             onValueChange={handleRecipientChange}
                                             disabled={!!recipientId || processing}
                                         >
-                                            <SelectTrigger className="mt-1.5 text-xs sm:mt-2 sm:text-sm">
-                                                <SelectValue placeholder="Choose a user..." />
+                                            <SelectTrigger className="h-11 w-full border-slate-200 bg-slate-50/50 transition-all hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800">
+                                                <SelectValue placeholder="Select a resident" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {users.map((user) => (
                                                     <SelectItem key={user.id} value={user.id.toString()}>
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <span className="text-xs font-medium sm:text-sm">{user.name}</span>
-                                                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                                                                <User className="h-3 w-3 text-slate-500 dark:text-slate-400" />
+                                                            </div>
+                                                            <div className="flex flex-col text-left">
+                                                                <span className="font-medium leading-none">{user.name}</span>
+                                                                <span className="text-xs text-muted-foreground">{user.email}</span>
+                                                            </div>
                                                         </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        {errors.recipient_id && <p className="mt-1 text-xs font-medium text-red-600">{errors.recipient_id}</p>}
+                                        {errors.recipient_id && (
+                                            <p className="text-xs font-medium text-red-500 animate-in slide-in-from-top-1">
+                                                {errors.recipient_id}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {/* Selected User Info - Responsive */}
+                                    {/* Selected User Context Box */}
                                     {selectedUser && (
-                                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5 sm:p-3 md:p-4 dark:border-blue-800 dark:bg-blue-950/20">
-                                            <p className="text-xs sm:text-sm">
-                                                <span className="text-muted-foreground">To: </span>
-                                                <span className="font-semibold dark:text-white">{selectedUser.name}</span>
-                                            </p>
-                                            <p className="mt-0.5 truncate text-xs text-muted-foreground">{selectedUser.email}</p>
+                                        <div className="relative overflow-hidden rounded-lg border border-blue-100 bg-blue-50/50 p-4 transition-all animate-in fade-in zoom-in-95 dark:border-blue-900/50 dark:bg-blue-950/20">
+                                            <div className="flex items-start gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                                                    <User className="h-4 w-4" />
+                                                </div>
+                                                <div className="flex-1 space-y-1">
+                                                    <p className="text-sm font-medium leading-none text-blue-900 dark:text-blue-100">
+                                                        Sending to {selectedUser.name}
+                                                    </p>
+                                                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                                                        {selectedUser.email}
+                                                    </p>
+                                                </div>
+                                                <CheckCircle2 className="h-5 w-5 text-blue-600 opacity-20 dark:text-blue-400" />
+                                            </div>
                                         </div>
                                     )}
-                                </div>
 
-                                {/* Message Body - Responsive */}
-                                <div className="space-y-2 sm:space-y-3">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <Label htmlFor="message-body" className="text-xs font-medium sm:text-sm">
-                                            Message <span className="text-red-500">*</span>
-                                        </Label>
-                                        <span className="text-xs whitespace-nowrap text-muted-foreground">{data.body.length} / 5000</span>
-                                    </div>
-                                    <Textarea
-                                        id="message-body"
-                                        value={data.body}
-                                        onChange={(e) => setData('body', e.target.value)}
-                                        placeholder="Type your message here..."
-                                        rows={6}
-                                        maxLength={5000}
-                                        className="mt-1.5 min-h-[120px] resize-none text-xs sm:mt-2 sm:min-h-[150px] sm:text-sm md:min-h-[180px]"
-                                        disabled={processing}
-                                    />
-                                    {errors.body && <p className="text-xs font-medium text-red-600">{errors.body}</p>}
-                                </div>
-
-                                {/* Actions - Responsive */}
-                                <div className="space-y-3 border-t pt-3 sm:space-y-4 sm:pt-4 md:pt-6">
-                                    <p className="text-xs text-muted-foreground sm:text-sm">
-                                        ✓ This message will be sent as <span className="font-medium text-sky-600 dark:text-sky-400">Admin</span>
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:flex md:justify-end md:gap-3">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => reset('body')}
-                                            disabled={processing || !data.body.trim()}
-                                            className="w-full py-1.5 text-xs sm:w-auto sm:py-2 sm:text-sm md:py-2"
-                                        >
-                                            Clear
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            disabled={processing || !data.body.trim() || !data.recipient_id}
-                                            className="col-span-2 w-full py-1.5 text-xs sm:col-span-1 sm:w-auto sm:py-2 sm:text-sm md:py-2"
-                                        >
-                                            {processing ? 'Sending...' : 'Send Message'}
-                                        </Button>
+                                    {/* Message Body */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="message-body" className="text-sm font-semibold">
+                                                Message Content
+                                            </Label>
+                                            <span className="text-[10px] text-slate-400">
+                                                {data.body.length}/5000
+                                            </span>
+                                        </div>
+                                        <Textarea
+                                            id="message-body"
+                                            value={data.body}
+                                            onChange={(e) => setData('body', e.target.value)}
+                                            placeholder="Type your message here..."
+                                            className="min-h-[200px] resize-y rounded-lg border-slate-200 bg-slate-50/50 px-4 py-3 text-base leading-relaxed focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:focus:bg-slate-950"
+                                            disabled={processing}
+                                            maxLength={5000}
+                                        />
+                                        {errors.body && (
+                                            <p className="text-xs font-medium text-red-500 animate-in slide-in-from-top-1">
+                                                {errors.body}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
-                            </form>
-                        </CardContent>
+                            </CardContent>
+
+                            {/* Footer Actions */}
+                            <CardFooter className="flex flex-col-reverse gap-3 border-t bg-slate-50/50 p-6 dark:bg-slate-900/50 sm:flex-row sm:justify-between">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => reset('body')}
+                                    disabled={processing || !data.body}
+                                    className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 sm:w-auto"
+                                >
+                                    Clear Form
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !data.body.trim() || !data.recipient_id}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto sm:min-w-[140px]"
+                                >
+                                    {processing ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                            Sending...
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-2">
+                                            <Send className="h-4 w-4" />
+                                            Send Message
+                                        </span>
+                                    )}
+                                </Button>
+                            </CardFooter>
+                        </form>
                     </Card>
                 </div>
             </div>

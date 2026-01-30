@@ -10,7 +10,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { toast } from 'sonner';
-import { UserCheck, FileText, Send, X } from 'lucide-react';
+import { UserCheck, FileText, Send } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -183,7 +183,7 @@ export default function Create({ users }: { users: User[] }) {
                                         className="w-full sm:w-auto"
                                         onClick={() => window.history.back()}
                                     >
-                                        <X className="mr-2 h-4 w-4" /> Cancel
+                                       Cancel
                                     </Button>
                                     <Button
                                         type="submit"

@@ -1,24 +1,25 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Shield } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Send, Shield, User } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Messages', href: '/residentuser/message' },
-    { title: 'Send Message', href: '/residentuser/message/create' },
+    { title: 'New Message', href: '/residentuser/message/create' },
 ];
 
 interface Admin {
     id: number;
     name: string;
     email: string;
+    avatar?: string; // Optional: if you have avatar URLs later
 }
 
 interface CreateProps {
@@ -30,7 +31,6 @@ interface CreateProps {
     };
     admins: Admin[];
     recipientId?: number;
-    recipientName?: string;
 }
 
 export default function Create({ auth, admins, recipientId }: CreateProps) {
@@ -39,11 +39,12 @@ export default function Create({ auth, admins, recipientId }: CreateProps) {
         body: '',
     });
 
-    const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(admins.find((a) => a.id === recipientId) || null);
+    const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(
+        admins.find((a) => a.id === recipientId) || null
+    );
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-
         post(route('residentuser.message.store'), {
             onSuccess: () => {
                 reset('body');
@@ -61,129 +62,165 @@ export default function Create({ auth, admins, recipientId }: CreateProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Send Message" />
 
-            {/* Changed p-4 to p-2 on mobile for more screen real estate, md:p-4 for desktop */}
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl p-2 md:p-4">
-                <div className="relative min-h-[50vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-gray-700">
+            {/* Main Container with subtle gradient background */}
+            <div className="flex min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center bg-slate-50/50 px-4 py-8 dark:bg-slate-950/50 sm:px-6">
 
-                    {/* Header Section: Stacks on mobile, Row on sm+ */}
-                    <div className="m-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                        <div>
-                            <h1 className="text-xl font-bold dark:text-white sm:text-2xl">Send Message</h1>
-                            <p className="mt-1 text-sm text-muted-foreground">Send a message to barangay administrator</p>
-                        </div>
+                {/* Max width container for better readability on large screens */}
+                <div className="w-full max-w-2xl space-y-6">
 
-                        <Link href={route('residentuser.message.index')} className="w-full sm:w-auto">
-                            <Button variant="outline" className="w-full sm:w-auto">
-                                Back
-                            </Button>
+                    {/* Header Navigation */}
+                    <div className="flex items-center justify-between">
+                        <Link
+                            href={route('residentuser.message.index')}
+                            className="group flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        >
+                            <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white transition-all group-hover:border-slate-300 group-hover:shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                                <ArrowLeft className="h-4 w-4" />
+                            </div>
+                            Back to Inbox
                         </Link>
                     </div>
 
-                    <div className="mx-2 mb-4 md:mx-4">
-                        <Card className="w-full max-w-3xl">
-                            <CardContent className="pt-6">
-                                {/* Main Layout: Column on mobile, Row on md+ */}
-                                <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
+                    <Card className="overflow-hidden border-slate-200 shadow-lg dark:border-slate-800">
+                        {/* Card Header with Sender Info */}
+                        <CardHeader className="bg-slate-50/50 pb-8 dark:bg-slate-900/50">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <CardTitle className="text-xl font-bold">Compose Message</CardTitle>
+                                    <CardDescription className="mt-1">
+                                        Send a secure message to the barangay administration.
+                                    </CardDescription>
+                                </div>
+                                {/* Sender Badge */}
+                                <div className="hidden sm:flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 shadow-sm dark:bg-slate-950">
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarFallback className="bg-blue-600 text-[10px] text-white">
+                                            {auth.user.name.substring(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                        {auth.user.name}
+                                    </span>
+                                </div>
+                            </div>
+                        </CardHeader>
 
-                                    {/* Avatar: Centered on mobile, Left on desktop */}
-                                    <div className="flex shrink-0 justify-center md:block">
-                                        <Avatar className="h-12 w-12 md:h-10 md:w-10">
-                                            <AvatarFallback className="bg-green-600 text-white">
-                                                {auth.user.name.substring(0, 2).toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
+                        <form onSubmit={handleSubmit}>
+                            <CardContent className="-mt-4 space-y-6 bg-white p-6 pt-0 dark:bg-slate-950">
+                                {/* Form Grid */}
+                                <div className="grid gap-6">
+
+                                    {/* Recipient Selection */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="recipient" className="text-sm font-semibold">
+                                            Recipient
+                                        </Label>
+                                        <Select
+                                            value={data.recipient_id}
+                                            onValueChange={handleRecipientChange}
+                                            disabled={!!recipientId || processing}
+                                        >
+                                            <SelectTrigger className="h-11 w-full border-slate-200 bg-slate-50/50 transition-all hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800">
+                                                <SelectValue placeholder="Select an administrator" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {admins.map((admin) => (
+                                                    <SelectItem key={admin.id} value={admin.id.toString()}>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                                                                <Shield className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                                            </div>
+                                                            <span className="font-medium">{admin.name}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.recipient_id && (
+                                            <p className="text-xs font-medium text-red-500 animate-in slide-in-from-top-1">
+                                                {errors.recipient_id}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    <div className="flex-1 space-y-4">
-                                        {/* Recipient Selection */}
-                                        <div className="flex flex-col gap-2">
-                                            <Label htmlFor="recipient">Send to Administrator</Label>
-                                            <Select
-                                                value={data.recipient_id}
-                                                onValueChange={handleRecipientChange}
-                                                disabled={!!recipientId || processing}
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select an administrator..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {admins.map((admin) => (
-                                                        <SelectItem key={admin.id} value={admin.id.toString()}>
-                                                            <div className="flex items-center gap-2 overflow-hidden">
-                                                                <Shield className="h-4 w-4 shrink-0" />
-                                                                <div className="flex flex-col overflow-hidden text-left">
-                                                                    <span className="truncate font-medium">{admin.name}</span>
-                                                                    <span className="truncate text-xs text-muted-foreground">{admin.email}</span>
-                                                                </div>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.recipient_id && <p className="text-sm text-red-600">{errors.recipient_id}</p>}
-                                        </div>
-
-                                        {/* Selected Admin Info Box */}
-                                        {selectedAdmin && (
-                                            <div className="flex items-start gap-3 rounded-lg bg-green-50 p-3 dark:bg-green-950/20">
-                                                <Shield className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm">
-                                                        Sending to: <span className="font-medium">{selectedAdmin.name}</span>
-                                                    </p>
-                                                    <p className="break-all text-xs text-muted-foreground">{selectedAdmin.email}</p>
+                                    {/* Selected Admin Context Box */}
+                                    {selectedAdmin && (
+                                        <div className="relative overflow-hidden rounded-lg border border-blue-100 bg-blue-50/50 p-4 transition-all animate-in fade-in zoom-in-95 dark:border-blue-900/50 dark:bg-blue-950/20">
+                                            <div className="flex items-start gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                                                    <User className="h-4 w-4" />
                                                 </div>
+                                                <div className="flex-1 space-y-1">
+                                                    <p className="text-sm font-medium leading-none text-blue-900 dark:text-blue-100">
+                                                        Sending to {selectedAdmin.name}
+                                                    </p>
+                                                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                                                        {selectedAdmin.email}
+                                                    </p>
+                                                </div>
+                                                <CheckCircle2 className="h-5 w-5 text-blue-600 opacity-20 dark:text-blue-400" />
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* Message Body */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="message-body" className="text-sm font-semibold">
+                                                Message Content
+                                            </Label>
+                                            <span className="text-[10px] text-slate-400">
+                                                {data.body.length}/5000
+                                            </span>
+                                        </div>
+                                        <Textarea
+                                            id="message-body"
+                                            value={data.body}
+                                            onChange={(e) => setData('body', e.target.value)}
+                                            placeholder="Write your concerns, inquiries, or reports here..."
+                                            className="min-h-[200px] resize-y rounded-lg border-slate-200 bg-slate-50/50 px-4 py-3 text-base leading-relaxed focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:focus:bg-slate-950"
+                                            disabled={processing}
+                                        />
+                                        {errors.body && (
+                                            <p className="text-xs font-medium text-red-500 animate-in slide-in-from-top-1">
+                                                {errors.body}
+                                            </p>
                                         )}
-
-                                        {/* Message Body */}
-                                        <div>
-                                            <Label htmlFor="message-body">Message</Label>
-                                            <Textarea
-                                                id="message-body"
-                                                value={data.body}
-                                                onChange={(e) => setData('body', e.target.value)}
-                                                placeholder="Type your message here..."
-                                                // Responsive rows: 5 on mobile to save space, 8 on desktop
-                                                className="mt-2 min-h-[150px] resize-none"
-                                                rows={8}
-                                                disabled={processing}
-                                            />
-                                            {errors.body && <p className="mt-1 text-sm text-red-600">{errors.body}</p>}
-                                            <div className="mt-1 flex justify-end">
-                                                <p className="text-xs text-muted-foreground">{data.body.length} / 5000</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Actions: Stacked on mobile, Split on sm+ */}
-                                        <div className="flex flex-col-reverse gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-                                            <div className="text-center text-xs text-muted-foreground sm:text-left">
-                                                Your message will be sent privately
-                                            </div>
-                                            <div className="flex flex-col gap-2 sm:flex-row">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => reset('body')}
-                                                    disabled={processing}
-                                                    className="w-full sm:w-auto"
-                                                >
-                                                    Clear
-                                                </Button>
-                                                <Button
-                                                    onClick={handleSubmit}
-                                                    disabled={processing || !data.body.trim() || !data.recipient_id}
-                                                    className="w-full sm:w-auto"
-                                                >
-                                                    {processing ? 'Sending...' : 'Send Message'}
-                                                </Button>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
-                        </Card>
-                    </div>
+
+                            {/* Footer Actions */}
+                            <CardFooter className="flex flex-col-reverse gap-3 border-t bg-slate-50/50 p-6 dark:bg-slate-900/50 sm:flex-row sm:justify-between">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => reset('body')}
+                                    disabled={processing || !data.body}
+                                    className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 sm:w-auto"
+                                >
+                                    Clear Form
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !data.body.trim() || !data.recipient_id}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto sm:min-w-[140px]"
+                                >
+                                    {processing ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                            Sending...
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-2">
+                                            <Send className="h-4 w-4" />
+                                            Send Message
+                                        </span>
+                                    )}
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
                 </div>
             </div>
         </AppLayout>
